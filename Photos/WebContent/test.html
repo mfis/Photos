@@ -1,0 +1,47 @@
+<html>
+<body>
+
+<script>
+function vidSwap(vidURL) {
+document.getElementById('a').style.display = 'none';
+document.getElementById('b').style.display = 'block';
+var myVideo = document.getElementById('video');
+var source = document.createElement('source');
+source.setAttribute('src', vidURL);
+source.setAttribute('type', 'video/mp4');
+myVideo.appendChild(source);
+myVideo.load();
+myVideo.play();
+}
+</script>
+
+<style>
+.outer {
+    display: table;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+}
+
+.middle {
+    display: table-cell;
+    vertical-align: middle;
+}
+
+.inner {
+    margin-left: auto;
+    margin-right: auto; 
+    width:50%;
+}
+</style>
+
+<div class="outer">
+<div class="middle"> 
+<div id='a' class='inner' style='display: block;'><a onClick="javascript:vidSwap('http://localhost:8080/Photos/assets/Bastian/2.mp4'); return false;"><IMG width='100%' src='http://localhost:8080/Photos/assets/Bastian/2.jpg'/></a></div>
+<div id='b' class='inner' style='display: none; '><video id='video' width='100%' poster='http://localhost:8080/Photoshttp://localhost:8080/Photos/assets/Bastian/2.jpg' preload='none' controls ></video></div>
+</div>
+</div>
+
+
+</body>
+</html>

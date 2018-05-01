@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+	id="WebApp_ID" version="3.1">
+	<display-name>Photos</display-name>
+	<listener>
+		<listener-class>mfi.photos.server.logic.ContextListener</listener-class>
+	</listener>	
+	<welcome-file-list>
+		<welcome-file>PhotosServlet</welcome-file>
+	</welcome-file-list>
+	<servlet>
+		<description>Photos</description>
+		<display-name>PhotosServlet</display-name>
+		<servlet-name>PhotosServlet</servlet-name>
+		<servlet-class>mfi.photos.servlet.PhotosServlet</servlet-class>
+	</servlet>
+	<servlet>
+		<description>PhotosAddGalleryServlet</description>
+		<display-name>PhotosAddGalleryServlet</display-name>
+		<servlet-name>PhotosAddGalleryServlet</servlet-name>
+		<servlet-class>mfi.photos.servlet.PhotosAddGalleryServlet</servlet-class>
+	</servlet>	
+	<servlet>
+		<description>PhotosAssetServlet</description>
+		<display-name>PhotosAssetServlet</display-name>
+		<servlet-name>PhotosAssetServlet</servlet-name>
+		<servlet-class>mfi.photos.servlet.PhotosAssetServlet</servlet-class>
+	</servlet>	
+	<servlet-mapping>
+		<servlet-name>PhotosServlet</servlet-name>
+		<url-pattern>/PhotosServlet</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>PhotosAddGalleryServlet</servlet-name>
+		<url-pattern>/PhotosAddGalleryServlet</url-pattern>
+	</servlet-mapping>	
+	<servlet-mapping>
+		<servlet-name>PhotosAssetServlet</servlet-name>
+		<url-pattern>/assets/*</url-pattern>
+	</servlet-mapping>		
+</web-app>
