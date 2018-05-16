@@ -124,6 +124,12 @@ public class PhotosServlet extends HttpServlet {
 	private String checkLogin(Map<String, String> params, HttpServletRequest request, HttpServletResponse response,
 			StringBuilder sb) throws IOException {
 
+		System.out.println(params.get("cookieok"));
+		if (!StringUtils.trimToEmpty(params.get("cookieok")).equals("true")) {
+			processor.loginscreenHTML(sb,
+					"Sie m&uuml;ssen zur Anmeldung zun&auml;chst der Datenschutzerkl&auml;rung zustimmen.");
+			return null;
+		}
 		String newCookie = null;
 		String loginUser = StringUtils.trimToEmpty(params.get("login_user"));
 		String loginPass = StringUtils.trimToEmpty(params.get("login_pass"));
