@@ -56,6 +56,7 @@ public class GalleryView {
 	private String galleryDisplayNormDate;
 	private String baseURL;
 	private String galleryhash;
+	private String sortKey;
 
 	private String assetCookie;
 
@@ -206,6 +207,14 @@ public class GalleryView {
 
 	public void setAssetCookie(String assetCookie) {
 		this.assetCookie = assetCookie;
+	}
+
+	public String getSortKey() {
+		return sortKey;
+	}
+
+	public void setSortKey(String sortKey) {
+		this.sortKey = sortKey;
 	}
 
 }

@@ -12,7 +12,7 @@ import mfi.photos.shared.GalleryView;
 
 public class DisplayNameUtil {
 
-	private static final int PATTERN_LENGTH = 10;
+	private static final Pattern P0_NOW = Pattern.compile("(9999_99_99)"); // jetzt
 	private static final Pattern P1_FULL_DATE = Pattern.compile("[0-9]{4}[_]{1}[0-9]{2}[_]{1}[0-9]{2}"); // 2001_02_04
 	private static final Pattern P2_YEAR_MONTH = Pattern.compile("[0-9]{4}[_]{1}[0-9]{2}[_]{1}[xX]{2}"); // 1999_01_XX
 	private static final Pattern P3_YEAR = Pattern.compile("[0-9]{4}[_]{1}[Xx]{2}[_]{1}[xX]{2}"); // 1999_XX_XX
@@ -27,14 +27,15 @@ public class DisplayNameUtil {
 	private static final DateTimeFormatter DATE_FORMAT_YEAR = DateTimeFormatter.ofPattern("yyyy")
 			.withLocale(Locale.GERMAN);
 
-	// public static void main(String[] args) {
-	// System.out.println(lookupDisplayDate("2017_09_11 full"));
-	// System.out.println(lookupDisplayDate("2017_10_xX year month"));
-	// System.out.println(lookupDisplayDate("2017_XX_xX year"));
-	// System.out.println(lookupDisplayDate("201x_XX_xX decade"));
-	// // System.out.println(lookupDisplayDate("xXxx_XX_xX no valid date"));
-	// // System.out.println(lookupDisplayDate("no date"));
-	// }
+	public static void main(String[] args) {
+		System.out.println(lookupDisplayDate("2017_09_11"));
+		System.out.println(lookupDisplayDate("2017_10_xX"));
+		System.out.println(lookupDisplayDate("2017_XX_xX "));
+		System.out.println(lookupDisplayDate("201x_XX_xX"));
+		System.out.println(lookupDisplayDate("xXxx_XX_xX"));
+		System.out.println(lookupDisplayDate("9999_99_99"));
+		System.out.println(lookupDisplayDate("no date"));
+	}
 
 	public static synchronized void createDisplayName(GalleryView galleryView) {
 
@@ -42,6 +43,7 @@ public class DisplayNameUtil {
 		String date = StringUtils.substringBefore(localName, " ");
 		String caption = StringUtils.trim(StringUtils.removeStart(localName, date));
 		String displayDate = "";
+		String sortKey = "";
 
 		String[] dates = StringUtils.split(date, '-');
 		String[] displayDates = new String[dates.length];
@@ -50,6 +52,9 @@ public class DisplayNameUtil {
 			if (displayDates[d] == null) {
 				displayDates[d] = "";
 				caption = localName;
+				sortKey = localName;
+			} else {
+				sortKey = dates[d];
 			}
 		}
 
@@ -58,35 +63,41 @@ public class DisplayNameUtil {
 		galleryView.setGalleryDisplayNormDate(date);
 		galleryView.setGalleryDisplayIdentifier(displayDate);
 		galleryView.setGalleryDisplayName(caption);
+		galleryView.setSortKey(sortKey);
 	}
 
 	private static String lookupDisplayDate(String date) {
 
 		String displayDate = "";
-		Matcher m1FullDate = P1_FULL_DATE.matcher(date);
-		if (m1FullDate.matches()) {
-			LocalDate localDate = LocalDate.parse(date, DATE_PARSE_FULL);
-			displayDate = localDate.format(DATE_FORMAT_FULL);
+		Matcher m0Now = P0_NOW.matcher(date);
+		if (m0Now.matches()) {
+			displayDate = "jetzt";
 		} else {
-			Matcher m2YearMonth = P2_YEAR_MONTH.matcher(date);
-			if (m2YearMonth.matches()) {
-				LocalDate localDate = LocalDate.parse(date.substring(0, 8) + "01", DATE_PARSE_FULL);
-				displayDate = localDate.format(DATE_FORMAT_YEAR_MONTH);
+			Matcher m1FullDate = P1_FULL_DATE.matcher(date);
+			if (m1FullDate.matches()) {
+				LocalDate localDate = LocalDate.parse(date, DATE_PARSE_FULL);
+				displayDate = localDate.format(DATE_FORMAT_FULL);
 			} else {
-				Matcher m3Year = P3_YEAR.matcher(date);
-				if (m3Year.matches()) {
-					LocalDate localDate = LocalDate.parse(date.substring(0, 5) + "01_01", DATE_PARSE_FULL);
-					displayDate = localDate.format(DATE_FORMAT_YEAR);
+				Matcher m2YearMonth = P2_YEAR_MONTH.matcher(date);
+				if (m2YearMonth.matches()) {
+					LocalDate localDate = LocalDate.parse(date.substring(0, 8) + "01", DATE_PARSE_FULL);
+					displayDate = localDate.format(DATE_FORMAT_YEAR_MONTH);
 				} else {
-					Matcher m4Decade = P4_DECADE.matcher(date);
-					if (m4Decade.matches()) {
-						displayDate = date.substring(0, 3) + "0'er";
+					Matcher m3Year = P3_YEAR.matcher(date);
+					if (m3Year.matches()) {
+						LocalDate localDate = LocalDate.parse(date.substring(0, 5) + "01_01", DATE_PARSE_FULL);
+						displayDate = localDate.format(DATE_FORMAT_YEAR);
 					} else {
-						Matcher m54Udefined = P5_UNDEFINED.matcher(date);
-						if (m54Udefined.matches()) {
-							displayDate = "";
+						Matcher m4Decade = P4_DECADE.matcher(date);
+						if (m4Decade.matches()) {
+							displayDate = date.substring(0, 3) + "0'er";
 						} else {
-							displayDate = null;
+							Matcher m54Udefined = P5_UNDEFINED.matcher(date);
+							if (m54Udefined.matches()) {
+								displayDate = "";
+							} else {
+								displayDate = null;
+							}
 						}
 					}
 				}

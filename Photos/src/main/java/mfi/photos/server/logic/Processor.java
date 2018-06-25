@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -33,6 +33,7 @@ import mfi.photos.shared.GalleryList.Item;
 import mfi.photos.shared.GalleryView;
 import mfi.photos.util.DisplayNameUtil;
 import mfi.photos.util.GalleryViewCache;
+import mfi.photos.util.GalleryViewComparator;
 import mfi.photos.util.IOUtil;
 import mfi.photos.util.KeyAccess;
 import mfi.photos.util.ServletUtil;
@@ -256,26 +257,24 @@ public class Processor {
 		String jsonDir = lookupJsonDir(properties);
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 
-		Map<String, GalleryView> galleryViews = new LinkedHashMap<String, GalleryView>();
+		List<GalleryView> galleryViews = new LinkedList<GalleryView>();
 		Set<String> keySet = GalleryViewCache.getInstance().keySet();
 
 		for (String string : keySet) {
 			GalleryView galleryView = GalleryViewCache.getInstance().read(string);
 			if (galleryView.getUsersAsList().contains(user) || user.equals(properties.getProperty("technicalUser"))) {
-				galleryViews.put(galleryView.getKey(), galleryView);
+				galleryViews.add(galleryView);
 			}
 		}
 
+		Collections.sort(galleryViews, new GalleryViewComparator());
+		Collections.reverse(galleryViews);
+
 		GalleryList galleryList = new GalleryList(user, galleryViews.size(), yPos, s);
-		List<String> list = new ArrayList<String>(galleryViews.keySet());
-		Collections.sort(list);
-		Collections.reverse(list);
-		for (String key : list) {
-			galleryList.addItem(key, galleryViews.get(key).getGalleryDisplayName(),
-					galleryViews.get(key).getGalleryDisplayIdentifier(),
-					galleryViews.get(key).getGalleryDisplayNormDate(),
-					withHashesAndUsers ? galleryViews.get(key).getGalleryhash() : null,
-					withHashesAndUsers ? galleryViews.get(key).getUsers() : null);
+		for (GalleryView view : galleryViews) {
+			galleryList.addItem(view.getKey(), view.getGalleryDisplayName(), view.getGalleryDisplayIdentifier(),
+					view.getGalleryDisplayNormDate(), withHashesAndUsers ? view.getGalleryhash() : null,
+					withHashesAndUsers ? view.getUsers() : null);
 		}
 		String json = gson.toJson(galleryList);
 		return json;

@@ -48,7 +48,7 @@ body {
   margin-right:auto;
 }
 figure {
-  padding: 5px;	
+  padding: 3px;	
   float: left;
 }
 figure a {
@@ -148,7 +148,14 @@ figure a {
   width: 100%;
 }
 .pic-content {
-  padding: 30px;
+  padding: 25px;
+}
+@media only screen 
+  and (orientation: portrait) 
+  and (max-device-width: 736px) {
+  .pic-content {
+    padding: 5px;
+  }
 }
 .picture {
   padding: 5px;
