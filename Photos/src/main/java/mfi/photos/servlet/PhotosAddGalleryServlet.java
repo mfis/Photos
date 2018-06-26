@@ -92,6 +92,8 @@ public class PhotosAddGalleryServlet extends HttpServlet {
 		if (loginSuccessful) {
 			if (params.containsKey("saveGallery")) {
 				processor.saveNewGallery(params);
+			} else if (params.containsKey("renameGallery")) {
+				processor.renameGallery(params);
 			} else if (params.containsKey("saveImage")) {
 				processor.saveNewImage(params);
 			} else if (params.containsKey("checksum")) {

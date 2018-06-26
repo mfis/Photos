@@ -51,10 +51,7 @@ public class Processor {
 
 	public File lookupAssetFile(String path) {
 
-		String base = properties.getProperty("photosDir");
-		if (!base.endsWith("/")) {
-			base = base + "/";
-		}
+		String base = lookupPhotosDir();
 		path = StringUtils.removeStart(path, properties.getProperty("assetURI"));
 		String filePath = base + path + AES.FILE_SUFFIX;
 
@@ -67,10 +64,7 @@ public class Processor {
 		String imageName = params.get("imageName");
 		String base64Data = params.get("saveImage");
 		byte[] data = Base64.getDecoder().decode(base64Data);
-		String photosDir = properties.getProperty("photosDir");
-		if (!photosDir.endsWith("/")) {
-			photosDir = photosDir + "/";
-		}
+		String photosDir = lookupPhotosDir();
 		File dir = new File(photosDir + galleryName);
 		if (!dir.exists()) {
 			FileUtils.forceMkdir(dir);
@@ -79,14 +73,19 @@ public class Processor {
 		FileUtils.writeByteArrayToFile(photo, data, Boolean.valueOf(params.get("append")));
 	}
 
-	public String checksumFromImage(Map<String, String> params) throws UnsupportedEncodingException, IOException {
-
-		String galleryName = params.get("galleryName");
-		String imageName = params.get("imageName");
+	private String lookupPhotosDir() {
 		String photosDir = properties.getProperty("photosDir");
 		if (!photosDir.endsWith("/")) {
 			photosDir = photosDir + "/";
 		}
+		return photosDir;
+	}
+
+	public String checksumFromImage(Map<String, String> params) throws UnsupportedEncodingException, IOException {
+
+		String galleryName = params.get("galleryName");
+		String imageName = params.get("imageName");
+		String photosDir = lookupPhotosDir();
 		File photo = new File(photosDir + galleryName + "/" + imageName + AES.FILE_SUFFIX);
 		try {
 			String checksumValue = Long.toString(photo.length());
@@ -104,6 +103,37 @@ public class Processor {
 		String newJson = new String(Base64.getDecoder().decode(base64String), "utf-8");
 		GalleryView galleryView = gson.fromJson(newJson, GalleryView.class);
 		FileUtils.writeStringToFile(new File(jsonDir + galleryView.getKey() + ".json"), newJson);
+		GalleryViewCache.getInstance().refresh(jsonDir, gson);
+	}
+
+	public void renameGallery(Map<String, String> params) throws UnsupportedEncodingException, IOException {
+
+		String keyOld = params.get("keyOld");
+
+		Gson gson = new GsonBuilder().create();
+		String jsonDir = lookupJsonDir(properties);
+		String base64String = params.get("renameGallery");
+		String newJson = new String(Base64.getDecoder().decode(base64String), "utf-8");
+		GalleryView galleryView = gson.fromJson(newJson, GalleryView.class);
+
+		// rename directory
+		String photosDir = lookupPhotosDir();
+		File dir = new File(photosDir + keyOld);
+		boolean ok = dir.renameTo(new File(photosDir + galleryView.getKey()));
+		if (!ok) {
+			throw new RuntimeException("renaming not successful");
+		}
+
+		// save new gallery
+		FileUtils.writeStringToFile(new File(jsonDir + galleryView.getKey() + ".json"), newJson);
+
+		// delete old gallery
+		File oldJsonFile = new File(jsonDir + keyOld + ".json");
+		ok = oldJsonFile.delete();
+		if (!ok) {
+			throw new RuntimeException("renaming not successful");
+		}
+
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 	}
 
@@ -180,11 +210,7 @@ public class Processor {
 		}
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 
-		// Delete unreferenced photos
-		String base = properties.getProperty("photosDir");
-		if (!base.endsWith("/")) {
-			base = base + "/";
-		}
+		String base = lookupPhotosDir();
 
 		File[] listFiles = new File(base).listFiles((FileFilter) DirectoryFileFilter.DIRECTORY);
 		for (File dir : listFiles) {
