@@ -58,7 +58,7 @@ public class DisplayNameUtil {
 			}
 		}
 
-		displayDate = StringUtils.join(displayDates, "-");
+		displayDate = StringUtils.join(displayDates, " - ");
 
 		galleryView.setGalleryDisplayNormDate(date);
 		galleryView.setGalleryDisplayIdentifier(displayDate);
