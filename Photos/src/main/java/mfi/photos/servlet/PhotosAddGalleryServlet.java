@@ -6,72 +6,24 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import mfi.photos.server.logic.Processor;
 
-/**
- * Servlet implementation class PhotosServlet
- */
-public class PhotosAddGalleryServlet extends HttpServlet {
+@Controller
+public class PhotosAddGalleryServlet {
 
 	private static final String UTF_8 = "UTF-8";
-	private static final long serialVersionUID = 1L;
 
-	private Processor processor;
+	private static final Processor processor = new Processor();
 
-	/**
-	 * @see HttpServlet#HttpServlet()
-	 */
-	public PhotosAddGalleryServlet() {
-		super();
-	}
-
-	/**
-	 * @see Servlet#init(ServletConfig)
-	 */
-	@Override
-	public void init(ServletConfig config) throws ServletException {
-
-		processor = new Processor();
-	}
-
-	/**
-	 * @see Servlet#destroy()
-	 */
-	@Override
-	public void destroy() {
-		// noop
-	}
-
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
-	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		response(request, response);
-	}
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
-	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		response(request, response);
-	}
-
-	private void response(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	@RequestMapping("/PhotosAddGalleryServlet")
+	public void response(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
 		Map<String, String> params = new HashMap<>();
 		Enumeration<String> parameterNames = request.getParameterNames();

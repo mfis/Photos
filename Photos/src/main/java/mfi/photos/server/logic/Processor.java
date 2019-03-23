@@ -81,7 +81,8 @@ public class Processor {
 		return photosDir;
 	}
 
-	public String checksumFromImage(Map<String, String> params) throws UnsupportedEncodingException, IOException {
+	public String checksumFromImage(Map<String, String> params)
+			throws UnsupportedEncodingException, IOException {
 
 		String galleryName = params.get("galleryName");
 		String imageName = params.get("imageName");
@@ -288,7 +289,8 @@ public class Processor {
 
 		for (String string : keySet) {
 			GalleryView galleryView = GalleryViewCache.getInstance().read(string);
-			if (galleryView.getUsersAsList().contains(user) || user.equals(properties.getProperty("technicalUser"))) {
+			if (galleryView.getUsersAsList().contains(user)
+					|| user.equals(properties.getProperty("technicalUser"))) {
 				galleryViews.add(galleryView);
 			}
 		}
@@ -298,8 +300,9 @@ public class Processor {
 
 		GalleryList galleryList = new GalleryList(user, galleryViews.size(), yPos, s);
 		for (GalleryView view : galleryViews) {
-			galleryList.addItem(view.getKey(), view.getGalleryDisplayName(), view.getGalleryDisplayIdentifier(),
-					view.getGalleryDisplayNormDate(), withHashesAndUsers ? view.getGalleryhash() : null,
+			galleryList.addItem(view.getKey(), view.getGalleryDisplayName(),
+					view.getGalleryDisplayIdentifier(), view.getGalleryDisplayNormDate(),
+					withHashesAndUsers ? view.getGalleryhash() : null,
 					withHashesAndUsers ? view.getUsers() : null);
 		}
 		String json = gson.toJson(galleryList);
@@ -343,10 +346,8 @@ public class Processor {
 	public Properties getApplicationProperties() {
 
 		Properties properties = new Properties();
-		String path = System.getProperty("catalina.base") + "/webapps/webAppProperties/photos.properties";
-		if (!(new File(path).exists())) {
-			path = System.getProperty("catalina.home") + "/webapps/webAppProperties/photos.properties";
-		}
+		String path = System.getProperty("user.home") + "/documents/config/photos.properties";
+
 		try {
 			properties.load(new FileInputStream(path));
 			properties.setProperty("FILE", path);

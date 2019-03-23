@@ -1,10 +1,11 @@
 package mfi.photos.server.logic;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -12,12 +13,13 @@ import com.google.gson.GsonBuilder;
 import mfi.photos.util.CookieMap;
 import mfi.photos.util.GalleryViewCache;
 
-public class ContextListener implements ServletContextListener {
+@Component
+public class ContextListener {
 
 	private static Logger logger = LoggerFactory.getLogger(ContextListener.class);
 
-	@Override
-	public void contextInitialized(ServletContextEvent servletContextEvent) {
+	@PostConstruct
+	public void contextInitialized() {
 
 		logger.info("Context initializing...");
 
@@ -30,15 +32,15 @@ public class ContextListener implements ServletContextListener {
 		logger.info("Context initialized.");
 	}
 
-	@Override
-	public void contextDestroyed(ServletContextEvent arg0) {
+	@PreDestroy
+	public void contextDestroyed() {
 
 		logger.info("Context destroying...");
 		try {
 			Processor processor = new Processor();
 			CookieMap.getInstance().saveTo(processor.getApplicationProperties());
 		} catch (Exception e) {
-			System.out.println(e);
+			logger.error("exception destroying context", e);
 		}
 
 		logger.info("Context destroyed.");

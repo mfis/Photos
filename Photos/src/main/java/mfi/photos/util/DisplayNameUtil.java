@@ -27,15 +27,15 @@ public class DisplayNameUtil {
 	private static final DateTimeFormatter DATE_FORMAT_YEAR = DateTimeFormatter.ofPattern("yyyy")
 			.withLocale(Locale.GERMAN);
 
-	public static void main(String[] args) {
-		System.out.println(lookupDisplayDate("2017_09_11"));
-		System.out.println(lookupDisplayDate("2017_10_xX"));
-		System.out.println(lookupDisplayDate("2017_XX_xX "));
-		System.out.println(lookupDisplayDate("201x_XX_xX"));
-		System.out.println(lookupDisplayDate("xXxx_XX_xX"));
-		System.out.println(lookupDisplayDate("9999_99_99"));
-		System.out.println(lookupDisplayDate("no date"));
-	}
+	// public static void main(String[] args) {
+	// System.out.println(lookupDisplayDate("2017_09_11"));
+	// System.out.println(lookupDisplayDate("2017_10_xX"));
+	// System.out.println(lookupDisplayDate("2017_XX_xX "));
+	// System.out.println(lookupDisplayDate("201x_XX_xX"));
+	// System.out.println(lookupDisplayDate("xXxx_XX_xX"));
+	// System.out.println(lookupDisplayDate("9999_99_99"));
+	// System.out.println(lookupDisplayDate("no date"));
+	// }
 
 	public static synchronized void createDisplayName(GalleryView galleryView) {
 
@@ -85,7 +85,8 @@ public class DisplayNameUtil {
 				} else {
 					Matcher m3Year = P3_YEAR.matcher(date);
 					if (m3Year.matches()) {
-						LocalDate localDate = LocalDate.parse(date.substring(0, 5) + "01_01", DATE_PARSE_FULL);
+						LocalDate localDate = LocalDate.parse(date.substring(0, 5) + "01_01",
+								DATE_PARSE_FULL);
 						displayDate = localDate.format(DATE_FORMAT_YEAR);
 					} else {
 						Matcher m4Decade = P4_DECADE.matcher(date);

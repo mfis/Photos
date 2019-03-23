@@ -15,7 +15,7 @@
 <link rel="icon" href="favicon.ico?4" type="image/x-icon"></link>
 <link rel="icon" sizes="152x152" href="apple-touch-icon-152x152-precomposed.png?3">
 <link rel="shortcut icon" href="favicon.ico?4"></link>
-<link rel="stylesheet" href="static/style.css?12"></link>
-<script src='static/script.js?19'></script>
-<script src='static/blazy.js?1'></script>
+<link rel="stylesheet" href="style.css?12"></link>
+<script src='script.js?19'></script>
+<script src='blazy.js?1'></script>
 <title>Photos</title>

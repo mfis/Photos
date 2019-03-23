@@ -7,74 +7,29 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import mfi.photos.server.logic.Processor;
 import mfi.photos.util.CookieMap;
 import mfi.photos.util.KeyAccess;
 import mfi.photos.util.ServletUtil;
 
-/**
- * Servlet implementation class PhotosServlet
- */
-public class PhotosServlet extends HttpServlet {
+@Controller
+public class PhotosServlet {
 
 	private static final String UTF_8 = "UTF-8";
-	private static final long serialVersionUID = 1L;
 
-	private Processor processor;
+	private static final Processor processor = new Processor();
 
-	/**
-	 * @see HttpServlet#HttpServlet()
-	 */
-	public PhotosServlet() {
-		super();
-	}
-
-	/**
-	 * @see Servlet#init(ServletConfig)
-	 */
-	@Override
-	public void init(ServletConfig config) throws ServletException {
-		processor = new Processor();
-	}
-
-	/**
-	 * @see Servlet#destroy()
-	 */
-	@Override
-	public void destroy() {
-		// noop
-	}
-
-	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
-	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		response(request, response);
-	}
-
-	/**
-	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse
-	 *      response)
-	 */
-	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		response(request, response);
-	}
-
-	private void response(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	@RequestMapping("/PhotosServlet")
+	public @ResponseBody void response(HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
 
 		Map<String, String> params = new HashMap<>();
 		Enumeration<String> parameterNames = request.getParameterNames();
@@ -121,10 +76,9 @@ public class PhotosServlet extends HttpServlet {
 		out.close();
 	}
 
-	private String checkLogin(Map<String, String> params, HttpServletRequest request, HttpServletResponse response,
-			StringBuilder sb) throws IOException {
+	private String checkLogin(Map<String, String> params, HttpServletRequest request,
+			HttpServletResponse response, StringBuilder sb) throws IOException {
 
-		System.out.println(params.get("cookieok"));
 		if (!StringUtils.trimToEmpty(params.get("cookieok")).equals("true")) {
 			processor.loginscreenHTML(sb,
 					"Sie m&uuml;ssen zur Anmeldung zun&auml;chst der Datenschutzerkl&auml;rung zustimmen.");

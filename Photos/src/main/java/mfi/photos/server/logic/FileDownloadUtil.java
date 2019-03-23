@@ -7,12 +7,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.RandomAccessFile;
+import java.net.FileNameMap;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.zip.GZIPOutputStream;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -36,8 +37,8 @@ public class FileDownloadUtil {
 																// week.
 	private static final String MULTIPART_BOUNDARY = "MULTIPART_BYTERANGES";
 
-	public void process(HttpServletRequest request, HttpServletResponse response, ServletContext servletContext,
-			File file, boolean content) throws IOException {
+	public void process(HttpServletRequest request, HttpServletResponse response, File file, boolean content)
+			throws IOException {
 
 		// System.out.print("\ndownload:" + file.getName() + " ");
 
@@ -183,7 +184,9 @@ public class FileDownloadUtil {
 
 		// Get content type by file name and set default GZIP support and
 		// content disposition.
-		String contentType = servletContext.getMimeType(fileName);
+
+		FileNameMap fileNameMap = URLConnection.getFileNameMap();
+		String contentType = fileNameMap.getContentTypeFor(file.getName());
 
 		boolean acceptsGzip = false;
 		String disposition = "inline";
@@ -371,7 +374,8 @@ public class FileDownloadUtil {
 	 * @throws IOException
 	 *             If something fails at I/O level.
 	 */
-	private void copy(File file, OutputStream output, long start, long length, boolean isEncrypted) throws IOException {
+	private void copy(File file, OutputStream output, long start, long length, boolean isEncrypted)
+			throws IOException {
 
 		// System.out.print("range:" + (start / 1024 / 1024) + "M/" + (length /
 		// 1024 / 1024) + "M->");
@@ -382,7 +386,8 @@ public class FileDownloadUtil {
 		try {
 			if (isEncrypted) {
 				inputStream = new FileInputStream(file);
-				AES.decrypt(KeyAccess.getInstance().getKey().toCharArray(), inputStream, output, start, length);
+				AES.decrypt(KeyAccess.getInstance().getKey().toCharArray(), inputStream, output, start,
+						length);
 			} else {
 				inputFile = new RandomAccessFile(file, "r");
 				copyChunk(inputFile, output, start, length);
@@ -406,7 +411,8 @@ public class FileDownloadUtil {
 
 	}
 
-	private void copyChunk(RandomAccessFile input, OutputStream output, long start, long length) throws IOException {
+	private void copyChunk(RandomAccessFile input, OutputStream output, long start, long length)
+			throws IOException {
 
 		byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 		int read;
