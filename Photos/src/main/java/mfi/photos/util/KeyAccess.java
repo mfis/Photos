@@ -37,7 +37,7 @@ public class KeyAccess {
 
 	public boolean isKeySet() {
 		// System.out.println("isKeySet " + this.key);
-		return this.key != null;
+		return this.key != null && this.key.length > 0;
 	}
 
 	public String getKey() {
