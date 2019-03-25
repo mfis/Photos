@@ -53,7 +53,7 @@
 			<plugin>
 				<groupId>StaticResourceProcessing</groupId>
 				<artifactId>StaticResourceProcessing</artifactId>
-				<version>1.2.1</version>
+				<version>1.4.0</version>
 				<configuration>
 					<webContentSourceDir>src/main/resources/orig</webContentSourceDir>
 					<webContentDestDir>src/main/resources/static</webContentDestDir>
