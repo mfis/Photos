@@ -274,7 +274,7 @@ background-color:#252525;
 	margin-top: 10px;
 	margin-left: auto;
     margin-right: auto;
-	background:url('apple-touch-icon-57x57-precomposed.png') no-repeat top left / 57px 57px;
+	background:url('apple-touch-icon-57x57.png') no-repeat top left / 57px 57px;
 	width:57px;
 	height:57px;
 	box-sizing: border-box;
@@ -288,7 +288,7 @@ only screen and (        min-device-pixel-ratio: 2),
 only screen and (                min-resolution: 192dpi),
 only screen and (                min-resolution: 2dppx) { 
 	.icon2xready{
-		background:url('apple-touch-icon-114x114-precomposed.png') no-repeat top left / 57px 57px;
+		background:url('apple-touch-icon-114x114.png') no-repeat top left / 57px 57px;
 	}
 }
 
