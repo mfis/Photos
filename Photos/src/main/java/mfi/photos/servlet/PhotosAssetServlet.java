@@ -7,6 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,17 +21,18 @@ import mfi.photos.util.CookieMap;
 @Controller
 public class PhotosAssetServlet {
 
-	private static final Processor processor = new Processor();
+	@Autowired
+	private Processor processor;
 
 	private static final FileDownloadUtil fileDownloadUtil = new FileDownloadUtil();
 
-	@RequestMapping(value = { "/Photos/assets/**" }, method = { RequestMethod.HEAD })
+	@RequestMapping(value = { "/assets/**" }, method = { RequestMethod.HEAD })
 	public @ResponseBody void responseHead(HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
 		responseInternal(request, response, false);
 	}
 
-	@GetMapping(value = { "/Photos/assets/**" })
+	@GetMapping(value = { "/assets/**" })
 	public @ResponseBody void responseGetPost(HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
 		responseInternal(request, response, true);

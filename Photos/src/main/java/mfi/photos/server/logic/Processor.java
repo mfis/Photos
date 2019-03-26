@@ -21,8 +21,12 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.logging.LogFactory;
+import org.apache.commons.text.StringEscapeUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -38,7 +42,11 @@ import mfi.photos.util.IOUtil;
 import mfi.photos.util.KeyAccess;
 import mfi.photos.util.ServletUtil;
 
+@Component
 public class Processor {
+
+	@Autowired
+	private Environment env;
 
 	Properties properties;
 
@@ -81,8 +89,7 @@ public class Processor {
 		return photosDir;
 	}
 
-	public String checksumFromImage(Map<String, String> params)
-			throws UnsupportedEncodingException, IOException {
+	public String checksumFromImage(Map<String, String> params) {
 
 		String galleryName = params.get("galleryName");
 		String imageName = params.get("imageName");
@@ -152,6 +159,12 @@ public class Processor {
 			String json = FileUtils.readFileToString(file, "UTF-8");
 			GalleryView galleryView = gson.fromJson(json, GalleryView.class);
 			galleryView.truncateHashes();
+			galleryView.setBaseURL(StringUtils.replace(galleryView.getBaseURL(),
+					env.getProperty("application.assets.path.migration.from1"),
+					env.getProperty("application.assets.path.migration.to1")));
+			galleryView.setBaseURL(StringUtils.replace(galleryView.getBaseURL(),
+					env.getProperty("application.assets.path.migration.from2"),
+					env.getProperty("application.assets.path.migration.to2")));
 			String assetCookie = ServletUtil.assetCookieIdFromCookie(cookie);
 			galleryView.setAssetCookie(assetCookie);
 			DisplayNameUtil.createDisplayName(galleryView);
@@ -330,7 +343,7 @@ public class Processor {
 			return ok;
 
 		} catch (Exception e) {
-			System.out.println(e);
+			LogFactory.getLog(Processor.class).error("error checking authentication:", e);
 			return false;
 		}
 	}

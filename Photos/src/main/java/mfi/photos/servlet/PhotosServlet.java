@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -25,9 +26,10 @@ public class PhotosServlet {
 
 	private static final String UTF_8 = "UTF-8";
 
-	private static final Processor processor = new Processor();
+	@Autowired
+	private Processor processor;
 
-	@RequestMapping("/PhotosServlet")
+	@RequestMapping("/")
 	public @ResponseBody void response(HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
 
