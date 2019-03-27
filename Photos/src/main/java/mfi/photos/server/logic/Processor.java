@@ -60,7 +60,7 @@ public class Processor {
 	public File lookupAssetFile(String path) {
 
 		String base = lookupPhotosDir();
-		path = StringUtils.removeStart(path, properties.getProperty("assetURI"));
+		path = StringUtils.removeStart(path, env.getProperty("application.assets.uri").trim());
 		String filePath = base + path + AES.FILE_SUFFIX;
 
 		return new File(filePath);
