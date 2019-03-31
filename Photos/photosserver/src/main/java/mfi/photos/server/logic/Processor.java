@@ -24,8 +24,6 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.StringEscapeUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
@@ -45,9 +43,6 @@ import mfi.photos.util.ServletUtil;
 @Component
 public class Processor {
 
-	@Autowired
-	private Environment env;
-
 	Properties properties;
 
 	public Processor() {
@@ -60,7 +55,7 @@ public class Processor {
 	public File lookupAssetFile(String path) {
 
 		String base = lookupPhotosDir();
-		path = StringUtils.removeStart(path, env.getProperty("application.assets.uri").trim());
+		path = StringUtils.removeStart(path, properties.getProperty("assets.uri").trim());
 		String filePath = base + path + AES.FILE_SUFFIX;
 
 		return new File(filePath);
@@ -160,11 +155,8 @@ public class Processor {
 			GalleryView galleryView = gson.fromJson(json, GalleryView.class);
 			galleryView.truncateHashes();
 			galleryView.setBaseURL(StringUtils.replace(galleryView.getBaseURL(),
-					env.getProperty("application.assets.path.migration.from1"),
-					env.getProperty("application.assets.path.migration.to1")));
-			galleryView.setBaseURL(StringUtils.replace(galleryView.getBaseURL(),
-					env.getProperty("application.assets.path.migration.from2"),
-					env.getProperty("application.assets.path.migration.to2")));
+					properties.getProperty("assets.path.migration.from"),
+					properties.getProperty("assets.path.migration.to")));
 			String assetCookie = ServletUtil.assetCookieIdFromCookie(cookie);
 			galleryView.setAssetCookie(assetCookie);
 			DisplayNameUtil.createDisplayName(galleryView);
