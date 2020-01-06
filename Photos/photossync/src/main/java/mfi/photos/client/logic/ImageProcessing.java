@@ -272,7 +272,7 @@ public class ImageProcessing {
 			int width = toolkitImage.getWidth(null);
 			int height = toolkitImage.getHeight(null);
 			BufferedImage rbi = new BufferedImage(width, height,
-					withAlpha ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB);
+					withAlpha ? BufferedImage.TYPE_INT_RGB : BufferedImage.TYPE_INT_RGB);
 			Graphics g = rbi.getGraphics();
 			g.drawImage(toolkitImage, 0, 0, null);
 			g.dispose();
