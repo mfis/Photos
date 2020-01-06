@@ -159,7 +159,7 @@ public class Synchronizer {
 
 		String syncStatusIdent;
 		if (photo.isVideo()) {
-			syncStatusIdent = photoFile.lastModified() + "#" + photoFile.length() + "#v4";
+			syncStatusIdent = photoFile.lastModified() + "#" + photoFile.length() + "#v3";
 		} else {
 			syncStatusIdent = photoFile.lastModified() + "#" + photoFile.length() + "#v1";
 		}
