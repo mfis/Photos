@@ -6,18 +6,14 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
 import mfi.photos.server.logic.Processor;
-import mfi.photos.util.CookieMap;
 import mfi.photos.util.KeyAccess;
 import mfi.photos.util.ServletUtil;
 
@@ -28,6 +24,9 @@ public class PhotosServlet {
 
 	@Autowired
 	private Processor processor;
+
+    @Autowired
+    private ServletUtil servletUtil;
 
 	@RequestMapping("/")
 	public @ResponseBody void response(HttpServletRequest request, HttpServletResponse response)
@@ -47,7 +46,7 @@ public class PhotosServlet {
 		response.addHeader("Content-Encoding", "gzip");
 		response.addHeader("Cache-Control", "no-cache");
 
-		String user = StringUtils.trimToNull(CookieMap.getInstance().read(ServletUtil.cookieRead(request)));
+        String user = servletUtil.userFromCookie(request, response);
 		String newCookie = null;
 
 		if (params.containsKey("login_user")) {
@@ -55,16 +54,16 @@ public class PhotosServlet {
 		} else if (!KeyAccess.getInstance().isKeySet()) {
 			processor.loginscreenHTML(sb, null);
 		} else if (params.containsKey("gallery") && user != null) {
-			newCookie = ServletUtil.setNewCookie(request, response, user);
+            newCookie = servletUtil.setNewCookie(request, response, user);
 			processor.galleryHTML(params, sb, user, newCookie);
 		} else if (params.containsKey("list") && user != null) {
-			newCookie = ServletUtil.setNewCookie(request, response, user);
+            newCookie = servletUtil.setNewCookie(request, response, user);
 			processor.listHTML(params, sb, user);
 		} else if (params.containsKey("logoff")) {
-			ServletUtil.cookieDelete(request, response);
+            servletUtil.cookieDelete(request, response);
 			processor.loginscreenHTML(sb, null);
 		} else if (user != null) {
-			newCookie = ServletUtil.setNewCookie(request, response, user);
+            newCookie = servletUtil.setNewCookie(request, response, user);
 			processor.listHTML(params, sb, user);
 		} else {
 			processor.loginscreenHTML(sb, null);
@@ -92,7 +91,7 @@ public class PhotosServlet {
 		boolean loginSuccessful = processor.checkAuthentication(loginUser, loginPass);
 		if (loginSuccessful) {
 			if (KeyAccess.getInstance().isKeySet()) {
-				newCookie = ServletUtil.setNewCookie(request, response, loginUser);
+                newCookie = servletUtil.setNewCookie(request, response, loginUser);
 				processor.listHTML(params, sb, loginUser);
 			} else {
 				processor.loginscreenHTML(sb, "Anmeldung zur Zeit nicht möglich");

@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -25,10 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.stereotype.Component;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-
 import mfi.photos.shared.AES;
 import mfi.photos.shared.GalleryList;
 import mfi.photos.shared.GalleryList.Item;
@@ -38,7 +35,6 @@ import mfi.photos.util.GalleryViewCache;
 import mfi.photos.util.GalleryViewComparator;
 import mfi.photos.util.IOUtil;
 import mfi.photos.util.KeyAccess;
-import mfi.photos.util.ServletUtil;
 
 @Component
 public class Processor {
@@ -157,8 +153,6 @@ public class Processor {
 			galleryView.setBaseURL(StringUtils.replace(galleryView.getBaseURL(),
 					properties.getProperty("assets.path.migration.from"),
 					properties.getProperty("assets.path.migration.to")));
-			String assetCookie = ServletUtil.assetCookieIdFromCookie(cookie);
-			galleryView.setAssetCookie(assetCookie);
 			DisplayNameUtil.createDisplayName(galleryView);
 			json = gson.toJson(galleryView);
 			if (galleryView.getUsersAsList().contains(user)) {

@@ -1,77 +1,94 @@
 package mfi.photos.util;
 
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
-
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.CharacterPredicates;
+import org.apache.commons.text.RandomStringGenerator;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import mfi.photos.server.logic.ContextListener;
+import mfi.photos.server.logic.Processor;
 
+@Component
 public class ServletUtil {
 
-	private static final String COOKIE_NAME = "PhotosLoginCookie";
+    @Autowired
+    private Processor processor;
 
-	public static String setNewCookie(HttpServletRequest request, HttpServletResponse response, String loginUser) {
+    private static final String COOKIE_NAME = "PhotosLoginCookie";
 
-		String oldCookieID = cookieRead(request);
-		String oldCookieAssetID = oldCookieID == null ? null : assetCookieIdFromCookie(oldCookieID);
+    private int cookieNotFoundCounter = 0;
 
-		String uuid = UUID.randomUUID().toString();
-		String assetID = assetCookieIdFromCookie(uuid);
-		ServletUtil.cookieWrite(response, uuid);
-		CookieMap.getInstance().write(uuid, loginUser);
-		CookieMap.getInstance().write(assetID, loginUser);
-		if (StringUtils.isNotBlank(oldCookieID)) {
-			if (oldCookieID != null) {
-				CookieMap.getInstance().delete(oldCookieID);
-			}
-			if (oldCookieAssetID != null) {
-				CookieMap.getInstance().delete(oldCookieAssetID);
-			}
-		}
+    public String setNewCookie(HttpServletRequest request, HttpServletResponse response, String loginUser) {
 
-		return uuid;
-	}
+        String oldCookieID = cookieRead(request);
 
-	public static String assetCookieIdFromCookie(String cookie) {
-		return "ac_" + new String(Base64.encodeBase64(DigestUtils.md5(cookie)), StandardCharsets.UTF_8)
-				.replaceAll("[^A-Za-z0-9_]", "");
-	}
+        String uuid = UUID.randomUUID().toString() + "_" + new RandomStringGenerator.Builder().withinRange('0', 'z')
+            .filteredBy(CharacterPredicates.LETTERS, CharacterPredicates.DIGITS).build().generate(3600);
+        cookieWrite(response, uuid);
+        CookieMap.getInstance().write(uuid, loginUser);
+        if (StringUtils.isNotBlank(oldCookieID)) {
+            CookieMap.getInstance().delete(oldCookieID);
+        }
 
-	public static String cookieRead(HttpServletRequest request) {
+        return uuid;
+    }
 
-		Cookie[] cookies = request.getCookies();
-		if (cookies == null) {
-			return null;
-		}
-		for (Cookie cookie : cookies) {
-			if (cookie.getName().equals(COOKIE_NAME)) {
-				return StringUtils.trimToNull(cookie.getValue());
-			}
-		}
-		return null;
-	}
+    public String cookieRead(HttpServletRequest request) {
 
-	public static void cookieDelete(HttpServletRequest request, HttpServletResponse response) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null) {
+            return null;
+        }
+        for (Cookie cookie : cookies) {
+            if (cookie.getName().equals(COOKIE_NAME)) {
+                return StringUtils.trimToNull(cookie.getValue());
+            }
+        }
+        return null;
+    }
 
-		String oldCookie = cookieRead(request);
-		if (oldCookie != null) {
-			CookieMap.getInstance().delete(oldCookie);
-		}
+    public String userFromCookie(HttpServletRequest request, HttpServletResponse response) {
+        String cookie = cookieRead(request);
+        String user = CookieMap.getInstance().read(StringUtils.trimToEmpty(cookie));
+        if (StringUtils.isNotBlank(cookie) && StringUtils.isBlank(user)) {
+            LoggerFactory.getLogger(ContextListener.class).error("FALSE LOGIN ATTEMPT");
+            cookieNotFoundCounter++;
+            if (cookieNotFoundCounter > 6) {
+                LoggerFactory.getLogger(ContextListener.class).error("DELETING ALL LOGIN COOKIES");
+                CookieMap.getInstance().reset();
+                try {
+                    CookieMap.getInstance().saveTo(processor.getApplicationProperties());
+                    cookieNotFoundCounter = 0;
+                } catch (Exception e) {
+                    LoggerFactory.getLogger(ContextListener.class).error("error saving cookiemap", e);
+                }
+            }
+            cookieDelete(request, response);
+        }
+        return user;
+    }
 
-		Cookie cookie = new Cookie(COOKIE_NAME, "");
-		cookie.setMaxAge(0);
-		response.addCookie(cookie);
-	}
+    public void cookieDelete(HttpServletRequest request, HttpServletResponse response) {
 
-	private static void cookieWrite(HttpServletResponse response, String value) {
+        String oldCookie = cookieRead(request);
+        if (oldCookie != null) {
+            CookieMap.getInstance().delete(oldCookie);
+        }
 
-		Cookie cookie = new Cookie(COOKIE_NAME, value);
-		cookie.setMaxAge(60 * 60 * 24 * 92);
-		response.addCookie(cookie);
-	}
+        Cookie cookie = new Cookie(COOKIE_NAME, "");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+    }
+
+    private void cookieWrite(HttpServletResponse response, String value) {
+
+        Cookie cookie = new Cookie(COOKIE_NAME, value);
+        cookie.setMaxAge(60 * 60 * 24 * 92);
+        response.addCookie(cookie);
+    }
 }
