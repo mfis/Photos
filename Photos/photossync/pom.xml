@@ -1,23 +1,30 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>photossync</artifactId>
 	<name>photossync</name>
 	<packaging>jar</packaging>
-	
+
 	<parent>
 		<groupId>Photos</groupId>
 		<artifactId>Photos</artifactId>
 		<version>DEV</version>
-	</parent>	
+	</parent>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<java.version>11</java.version>
+		<jdk.version>11</jdk.version>
+	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>Photos</groupId>
 			<artifactId>photoslibrary</artifactId>
 			<version>DEV</version>
-		</dependency>	
+		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
@@ -51,10 +58,10 @@
 			<artifactId>commons-codec</artifactId>
 		</dependency>
 		<dependency>
-		  <groupId>net.bramp.ffmpeg</groupId>
-		  <artifactId>ffmpeg</artifactId>
-		  <version>0.6.1</version>
-		</dependency>			
+			<groupId>net.bramp.ffmpeg</groupId>
+			<artifactId>ffmpeg</artifactId>
+			<version>0.6.1</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -85,10 +92,10 @@
 				</configuration>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
+					<release>11</release>
 				</configuration>
 			</plugin>
 		</plugins>
