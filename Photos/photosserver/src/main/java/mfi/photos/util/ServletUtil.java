@@ -54,7 +54,10 @@ public class ServletUtil {
 
     public String userFromCookie(HttpServletRequest request, HttpServletResponse response) {
         String cookie = cookieRead(request);
-        String user = CookieMap.getInstance().read(StringUtils.trimToEmpty(cookie));
+        String user = null;
+        if (StringUtils.isNotBlank(cookie)) {
+            user = CookieMap.getInstance().read(StringUtils.trimToEmpty(cookie));
+        }
         if (StringUtils.isNotBlank(cookie) && StringUtils.isBlank(user)) {
             LoggerFactory.getLogger(ContextListener.class).error("FALSE LOGIN ATTEMPT");
             cookieNotFoundCounter++;
@@ -82,6 +85,7 @@ public class ServletUtil {
 
         Cookie cookie = new Cookie(COOKIE_NAME, "");
         cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
         response.addCookie(cookie);
     }
 
@@ -89,6 +93,7 @@ public class ServletUtil {
 
         Cookie cookie = new Cookie(COOKIE_NAME, value);
         cookie.setMaxAge(60 * 60 * 24 * 92);
+        cookie.setHttpOnly(true);
         response.addCookie(cookie);
     }
 }

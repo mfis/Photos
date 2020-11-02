@@ -4,7 +4,7 @@ function videoOn(index) {
 	var video = document.getElementById('video' + index);
 	video.controls = true;
 	var source = document.createElement('source');
-	source.setAttribute('src', obj.baseURL + obj.pictures[index].name + "?ac=" + obj.assetCookie);
+	source.setAttribute('src', obj.baseURL + obj.pictures[index].name);
 	source.setAttribute('type', 'video/mp4');
 	video.appendChild(source);
 	video.play();
@@ -48,9 +48,9 @@ function showgallery() {
 		var srcString;
 		if(obj.pictures[i].name.endsWith(".mp4")){
 			var caption = obj.pictures[i].name.substring(0, obj.pictures[i].name.length-4); 
-			srcString = obj.baseURL + "tn_" + caption + ".jpg" + "?ac=" + obj.assetCookie;
+			srcString = obj.baseURL + "tn_" + caption + ".jpg";
 		}else{
-			srcString = obj.baseURL + "tn_" + obj.pictures[i].name + "?ac=" + obj.assetCookie;
+			srcString = obj.baseURL + "tn_" + obj.pictures[i].name;
 		}
 		
 		elemImg.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=='; 
