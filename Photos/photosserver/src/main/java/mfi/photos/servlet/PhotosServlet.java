@@ -2,104 +2,64 @@ package mfi.photos.servlet;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.zip.GZIPOutputStream;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import mfi.photos.server.logic.Processor;
-import mfi.photos.util.KeyAccess;
-import mfi.photos.util.ServletUtil;
+import mfi.photos.util.IOUtil;
 
 @Controller
 public class PhotosServlet {
 
-	private static final String UTF_8 = "UTF-8";
+    private static final String UTF_8 = "UTF-8";
 
-	@Autowired
-	private Processor processor;
+    private static final String COOKIE_NAME = "PhotosLoginCookie";
 
-    @Autowired
-    private ServletUtil servletUtil;
+    @RequestMapping("/")
+    public @ResponseBody void response(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-	@RequestMapping("/")
-	public @ResponseBody void response(HttpServletRequest request, HttpServletResponse response)
-			throws IOException {
+        StringBuilder sb = new StringBuilder();
 
-		Map<String, String> params = new HashMap<>();
-		Enumeration<String> parameterNames = request.getParameterNames();
-		while (parameterNames.hasMoreElements()) {
-			String key = parameterNames.nextElement();
-			params.put(key, request.getParameter(key));
-		}
+        response.setContentType("text/html");
+        response.setCharacterEncoding(UTF_8);
+        response.addHeader("Content-Encoding", "gzip");
+        response.addHeader("Cache-Control", "no-cache");
+        response.setHeader("Referrer-Policy", "no-referrer");
+        response.setHeader("content-security-policy", "frame-ancestors 'none';");
+        response.setHeader("X-Frame-Options", "deny");
+        response.setHeader("X-Content-Type-Options", "nosniff");
 
-		StringBuilder sb = new StringBuilder();
+        loginscreenHTML(sb, "Aufgrund von Wartungsarbeiten steht diese Anwendung zur Zeit nicht zur Verfügung.");
+        cookieDelete(request, response);
 
-		response.setContentType("text/html");
-		response.setCharacterEncoding(UTF_8);
-		response.addHeader("Content-Encoding", "gzip");
-		response.addHeader("Cache-Control", "no-cache");
+        response.setStatus(200);
 
-        String user = servletUtil.userFromCookie(request, response);
-		String newCookie = null;
+        OutputStream out = new GZIPOutputStream(response.getOutputStream());
+        out.write(sb.toString().getBytes(UTF_8));
+        out.flush();
+        out.close();
+    }
 
-		if (params.containsKey("login_user")) {
-			newCookie = checkLogin(params, request, response, sb);
-		} else if (!KeyAccess.getInstance().isKeySet()) {
-			processor.loginscreenHTML(sb, null);
-		} else if (params.containsKey("gallery") && user != null) {
-            newCookie = servletUtil.setNewCookie(request, response, user);
-			processor.galleryHTML(params, sb, user, newCookie);
-		} else if (params.containsKey("list") && user != null) {
-            newCookie = servletUtil.setNewCookie(request, response, user);
-			processor.listHTML(params, sb, user);
-		} else if (params.containsKey("logoff")) {
-            servletUtil.cookieDelete(request, response);
-			processor.loginscreenHTML(sb, null);
-		} else if (user != null) {
-            newCookie = servletUtil.setNewCookie(request, response, user);
-			processor.listHTML(params, sb, user);
-		} else {
-			processor.loginscreenHTML(sb, null);
-		}
+    private void loginscreenHTML(StringBuilder sb, String message) {
 
-		response.setStatus(200);
+        String html = IOUtil.readContentFromFileInClasspath("login.html");
+        String htmlHead = IOUtil.readContentFromFileInClasspath("htmlhead");
+        html = StringUtils.replace(html, "<!-- HEAD -->", htmlHead);
+        html = StringUtils.replace(html, "/*JSONFILE*/", StringUtils.trimToEmpty(message));
+        html = StringUtils.replace(html, "/*LAWLINK*/", "https://fimatas.de/impressum/");
+        sb.append(html);
+    }
 
-		OutputStream out = new GZIPOutputStream(response.getOutputStream());
-		out.write(sb.toString().getBytes(UTF_8));
-		out.flush();
-		out.close();
-	}
+    private void cookieDelete(HttpServletRequest request, HttpServletResponse response) {
 
-	private String checkLogin(Map<String, String> params, HttpServletRequest request,
-			HttpServletResponse response, StringBuilder sb) throws IOException {
-
-		if (!StringUtils.trimToEmpty(params.get("cookieok")).equals("true")) {
-			processor.loginscreenHTML(sb,
-					"Sie m&uuml;ssen zur Anmeldung zun&auml;chst der Datenschutzerkl&auml;rung zustimmen.");
-			return null;
-		}
-		String newCookie = null;
-		String loginUser = StringUtils.trimToEmpty(params.get("login_user"));
-		String loginPass = StringUtils.trimToEmpty(params.get("login_pass"));
-		boolean loginSuccessful = processor.checkAuthentication(loginUser, loginPass);
-		if (loginSuccessful) {
-			if (KeyAccess.getInstance().isKeySet()) {
-                newCookie = servletUtil.setNewCookie(request, response, loginUser);
-				processor.listHTML(params, sb, loginUser);
-			} else {
-				processor.loginscreenHTML(sb, "Anmeldung zur Zeit nicht möglich");
-			}
-		} else {
-			processor.loginscreenHTML(sb, "Anmeldung nicht erfolgreich");
-		}
-		return newCookie;
-	}
+        Cookie cookie = new Cookie(COOKIE_NAME, "");
+        cookie.setMaxAge(0);
+        cookie.setHttpOnly(true);
+        response.addCookie(cookie);
+    }
 
 }

@@ -5,5 +5,14 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
-	// noop
+
+    // @Bean
+    // public LoginInterceptor pagePopulationInterceptor() {
+    // return new LoginInterceptor();
+    // }
+
+    // @Override
+    // public void addInterceptors(InterceptorRegistry registry) {
+    // registry.addInterceptor(pagePopulationInterceptor());
+    // }
 }

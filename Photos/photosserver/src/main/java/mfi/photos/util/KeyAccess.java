@@ -3,7 +3,6 @@ package mfi.photos.util;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-
 import mfi.photos.shared.AES;
 
 public class KeyAccess {
@@ -36,7 +35,6 @@ public class KeyAccess {
 	}
 
 	public boolean isKeySet() {
-		// System.out.println("isKeySet " + this.key);
 		return this.key != null && this.key.length > 0;
 	}
 
