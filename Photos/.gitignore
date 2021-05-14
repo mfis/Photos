@@ -1,4 +1,9 @@
 /build/
 /target/
+*/target/
 .DS_Store
 */DS_Store
+/photoslibrary/photoslibrary.iml
+/photossync/photossync.iml
+/Photos.iml
+/photosserver/photosserver.iml
