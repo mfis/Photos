@@ -1,8 +1,8 @@
 package mfi.photos.util;
 
-import java.util.Comparator;
-
 import mfi.photos.shared.GalleryView;
+
+import java.util.Comparator;
 
 public class GalleryViewComparator implements Comparator<GalleryView> {
 

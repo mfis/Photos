@@ -6,8 +6,8 @@ import org.springframework.context.annotation.PropertySource;
 
 @SpringBootApplication
 @PropertySource(value = "classpath:application.properties")
-public class Application {
+public class PhotosServerApplication {
 	public static void main(String[] args) {
-		SpringApplication.run(Application.class, args);
+		SpringApplication.run(PhotosServerApplication.class, args);
 	}
 }

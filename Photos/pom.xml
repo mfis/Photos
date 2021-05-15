@@ -9,18 +9,70 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.1.3.RELEASE</version>
-		<relativePath/>
+		<version>2.4.5</version>
+		<relativePath />
 	</parent>
 
 	<modules>
 		<module>photossync</module>
 		<module>photosserver</module>
 		<module>photoslibrary</module>
-	</modules> 
+	</modules>
 
 	<properties>
+		<!-- Encoding -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- Java -->
+		<java.version>11</java.version>
+		<jdk.version>${java.version}</jdk.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<!-- Dependency versions -->
+		<spring-boot.version>2.4.5</spring-boot.version>
+		<!-- Plugin versions -->
+		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<StaticResourceProcessing.version>1.5.1</StaticResourceProcessing.version>
+		<lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
+		<dependency-check-maven.version>6.1.5</dependency-check-maven.version>
 	</properties>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<!--<plugin>
+					<groupId>org.owasp</groupId>
+					<artifactId>dependency-check-maven</artifactId>
+					<version>${dependency-check-maven.version}</version>
+					<configuration>
+						<failBuildOnCVSS>0</failBuildOnCVSS>
+						<suppressionFile>/Users/mfi/Code/IntelliJ/Photos/Photos/owasp-suppressions.xml</suppressionFile>
+					</configuration>
+					<executions>
+						<execution>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin> -->
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${maven-compiler-plugin.version}</version>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<!-- <plugins>
+			<plugin>
+				<groupId>org.owasp</groupId>
+				<artifactId>dependency-check-maven</artifactId>
+				<version>${dependency-check-maven.version}</version>
+			</plugin>
+		</plugins> -->
+	</build>
 
 </project>

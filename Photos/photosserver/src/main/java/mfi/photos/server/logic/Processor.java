@@ -1,19 +1,12 @@
 package mfi.photos.server.logic;
 
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import mfi.photos.shared.AES;
+import mfi.photos.shared.GalleryList;
+import mfi.photos.shared.GalleryList.Item;
+import mfi.photos.shared.GalleryView;
+import mfi.photos.util.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -24,17 +17,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.stereotype.Component;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import mfi.photos.shared.AES;
-import mfi.photos.shared.GalleryList;
-import mfi.photos.shared.GalleryList.Item;
-import mfi.photos.shared.GalleryView;
-import mfi.photos.util.DisplayNameUtil;
-import mfi.photos.util.GalleryViewCache;
-import mfi.photos.util.GalleryViewComparator;
-import mfi.photos.util.IOUtil;
-import mfi.photos.util.KeyAccess;
+
+import java.io.*;
+import java.util.*;
 
 @Component
 public class Processor {

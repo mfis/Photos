@@ -1,13 +1,13 @@
 package mfi.photos.util;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
-
-import org.apache.commons.lang3.StringUtils;
 
 public class CookieMap {
 

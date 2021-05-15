@@ -1,10 +1,10 @@
 package mfi.photos.util;
 
+import mfi.photos.shared.AES;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
-
-import mfi.photos.shared.AES;
 
 public class KeyAccess {
 

@@ -1,11 +1,12 @@
 package mfi.photos.util;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URL;
 import java.net.URLConnection;
-import org.apache.commons.io.IOUtils;
 
 public class IOUtil {
 

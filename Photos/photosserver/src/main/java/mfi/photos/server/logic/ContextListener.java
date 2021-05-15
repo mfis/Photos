@@ -1,18 +1,16 @@
 package mfi.photos.server.logic;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import mfi.photos.util.CookieMap;
+import mfi.photos.util.GalleryViewCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import mfi.photos.util.CookieMap;
-import mfi.photos.util.GalleryViewCache;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 @Component
 public class ContextListener {

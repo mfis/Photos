@@ -1,14 +1,13 @@
 package mfi.photos.util;
 
+import mfi.photos.shared.GalleryView;
+import org.apache.commons.lang3.StringUtils;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.StringUtils;
-
-import mfi.photos.shared.GalleryView;
 
 public class DisplayNameUtil {
 
