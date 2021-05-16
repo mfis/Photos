@@ -1,6 +1,7 @@
 package mfi.photos.servlet;
 
 import mfi.photos.server.logic.Processor;
+import mfi.photos.server.logic.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,6 +14,7 @@ import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 public class PhotosAddGalleryServlet {
@@ -22,8 +24,17 @@ public class PhotosAddGalleryServlet {
 	@Autowired
 	private Processor processor;
 
+	@Autowired
+	private UserService userService;
+
 	@RequestMapping("/PhotosAddGalleryServlet")
 	public void response(HttpServletRequest request, HttpServletResponse response) throws IOException {
+
+		Optional<String> username = userService.lookupUserName();
+		if(username.isEmpty()){
+			response.setStatus(401);
+			return;
+		}
 
 		Map<String, String> params = new HashMap<>();
 		Enumeration<String> parameterNames = request.getParameterNames();
@@ -32,42 +43,33 @@ public class PhotosAddGalleryServlet {
 			params.put(key, request.getParameter(key));
 		}
 
-		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
-		response.addHeader("Content-Encoding", "gzip");
 		response.addHeader("Cache-Control", "no-cache");
 
-		String loginUser = StringUtils.trimToEmpty(params.get("login_user"));
-		String loginPass = StringUtils.trimToEmpty(params.get("login_pass"));
-		boolean loginSuccessful = processor.checkAuthentication(loginUser, loginPass);
-		String responseContent = "";
-		if (loginSuccessful) {
-			if (params.containsKey("saveGallery")) {
-				processor.saveNewGallery(params);
-			} else if (params.containsKey("renameGallery")) {
-				processor.renameGallery(params);
-			} else if (params.containsKey("saveImage")) {
-				processor.saveNewImage(params);
-			} else if (params.containsKey("checksum")) {
-				responseContent = processor.checksumFromImage(params);
-			} else if (params.containsKey("readlist")) {
-				// -> GalleryList
-				responseContent = processor.listJson(loginUser, null, 0, true);
-			} else if (params.containsKey("readalbum")) {
-				// -> GalleryView
-				responseContent = processor.galleryJson(loginUser, params.get("album_key"));
-			} else if (params.containsKey("cleanup")) {
-				processor.cleanUp(params.get("cleanup"), params.get("cleanupListHash"));
-			} else if (params.containsKey("testConnection")) {
-				// noop
-			}
-			response.setStatus(200);
-		} else {
-			response.setStatus(401);
-		}
-
 		PrintWriter out = response.getWriter();
-		out.println(responseContent);
+
+		// TODO: write separate methods for each request
+		if (params.containsKey("saveGallery")) {
+			processor.saveNewGallery(params);
+		} else if (params.containsKey("renameGallery")) {
+			processor.renameGallery(params);
+		} else if (params.containsKey("saveImage")) {
+			processor.saveNewImage(params);
+		} else if (params.containsKey("checksum")) {
+			out.print(processor.checksumFromImage(params));
+		} else if (params.containsKey("readlist")) {
+			// -> GalleryList
+			out.print(processor.listJson(username.get(), null, 0, true));
+		} else if (params.containsKey("readalbum")) {
+			// -> GalleryView
+			out.println(processor.galleryJson(username.get(), params.get("album_key")));
+		} else if (params.containsKey("cleanup")) {
+			processor.cleanUp(params.get("cleanup"), params.get("cleanupListHash"));
+		} else if (params.containsKey("testConnection")) {
+			// noop
+		}
+		response.setStatus(200);
+
 		out.flush();
 		out.close();
 	}

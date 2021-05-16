@@ -16,6 +16,7 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.StringEscapeUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
@@ -24,6 +25,10 @@ import java.util.*;
 @Component
 public class Processor {
 
+	@Autowired
+	private UserService userService;
+
+	// TODO: inject
 	Properties properties;
 
 	public Processor() {
@@ -121,8 +126,10 @@ public class Processor {
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 	}
 
-	public void galleryHTML(Map<String, String> params, StringBuilder sb, String user, String cookie)
+	public void galleryHTML(Map<String, String> params, StringBuilder sb)
 			throws IOException {
+
+		String user = userService.lookupUserName().get();
 
 		String html = IOUtil.readContentFromFileInClasspath("gallery.html");
 		String htmlHead = IOUtil.readContentFromFileInClasspath("htmlhead");
@@ -147,10 +154,10 @@ public class Processor {
 				html = StringUtils.replace(html, "/*JSONFILE*/", json);
 				sb.append(html);
 			} else {
-				listHTML(params, sb, user);
+				listHTML(params, sb);
 			}
 		} else {
-			listHTML(params, sb, user);
+			listHTML(params, sb);
 		}
 	}
 
@@ -228,7 +235,7 @@ public class Processor {
 		}
 	}
 
-	public void loginscreenHTML(StringBuilder sb, String message) {
+	public String loginscreenHTML(String message) {
 
 		String html = IOUtil.readContentFromFileInClasspath("login.html");
 		String htmlHead = IOUtil.readContentFromFileInClasspath("htmlhead");
@@ -236,10 +243,12 @@ public class Processor {
 		html = StringUtils.replace(html, "/*JSONFILE*/", StringUtils.trimToEmpty(message));
 		html = StringUtils.replace(html, "/*LAWLINK*/",
 				StringUtils.trimToEmpty(properties.getProperty("linkToLawSite")));
-		sb.append(html);
+		return html;
 	}
 
-	public void listHTML(Map<String, String> params, StringBuilder sb, String user) throws IOException {
+	public void listHTML(Map<String, String> params, StringBuilder sb) throws IOException {
+
+		String user = userService.lookupUserName().get();
 
 		String y = params.get("y");
 		String s = StringUtils.trimToEmpty(params.get("s"));
@@ -291,32 +300,6 @@ public class Processor {
 		}
 		String json = gson.toJson(galleryList);
 		return json;
-	}
-
-	public boolean checkAuthentication(String user, String pass) {
-
-		try {
-			String url = properties.getProperty("authenticationURL");
-
-			HttpClient client = new HttpClient();
-			PostMethod method = new PostMethod(url);
-
-			method.addParameter("user", user);
-			method.addParameter("pass", pass);
-			if (!KeyAccess.getInstance().isKeySet()) {
-				method.addParameter("getSecretForUser", properties.getProperty("technicalUser"));
-			}
-
-			boolean ok = client.executeMethod(method) == 200;
-			if (ok && !KeyAccess.getInstance().isKeySet()) {
-				KeyAccess.getInstance().setKey(method.getResponseBodyAsString());
-			}
-			return ok;
-
-		} catch (Exception e) {
-			LogFactory.getLog(Processor.class).error("error checking authentication:", e);
-			return false;
-		}
 	}
 
 	public String lookupJsonDir(Properties properties) {

@@ -2,6 +2,7 @@ package mfi.photos.servlet;
 
 import mfi.photos.server.logic.FileDownloadUtil;
 import mfi.photos.server.logic.Processor;
+import mfi.photos.server.logic.UserService;
 import mfi.photos.util.ServletUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 @Controller
 public class PhotosAssetServlet {
@@ -22,7 +24,7 @@ public class PhotosAssetServlet {
 	private Processor processor;
 
     @Autowired
-    private ServletUtil servletUtil;
+	private UserService userService;
 
 	private static final FileDownloadUtil fileDownloadUtil = new FileDownloadUtil();
 
@@ -40,17 +42,21 @@ public class PhotosAssetServlet {
 
 	private void responseInternal(HttpServletRequest request, HttpServletResponse response, boolean content)
 			throws IOException {
+
 		File file = processor.lookupAssetFile(request.getRequestURI());
 
-        String user = servletUtil.userFromCookie(request, response);
-
-		if (user != null && !file.exists()) {
-			response.setStatus(404);
-		} else if (user != null) {
-			fileDownloadUtil.process(request, response, file, content);
-		} else {
+		Optional<String> username = userService.lookupUserName();
+		if(username.isEmpty()){
+			// TODO: check user rights to read specific album
 			response.setStatus(401);
+			return;
 		}
-	}
 
+		if (!file.exists()) {
+			response.setStatus(404);
+			return;
+		}
+
+		fileDownloadUtil.process(request, response, file, content);
+	}
 }
