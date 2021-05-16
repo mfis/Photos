@@ -34,6 +34,7 @@ class SecurityConfigTest {
     void testRootAuthFailed() throws Exception {
         given(authService.checkUserWithPassword(null, null)).willReturn(false);
         mockMvc.perform(MockMvcRequestBuilders.get("/"))
-                .andExpect(MockMvcResultMatchers.status().isForbidden());
+                .andExpect(MockMvcResultMatchers.status().isFound())
+                .andExpect(MockMvcResultMatchers.redirectedUrl("/login"));
     }
 }

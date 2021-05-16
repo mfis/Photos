@@ -26,16 +26,16 @@ public class SecurityConfig {
 		protected void configure(HttpSecurity http) throws Exception {
 			http.addFilterAfter(new UserAuthenticationFilter(authService), ConcurrentSessionFilter.class);
 
-			http.authorizeRequests().anyRequest().authenticated();
-//			http.
-//				authorizeRequests().antMatchers("/*.js").permitAll().
-//					and().
-//				formLogin().loginPage("/login").failureUrl("/login?msg=error").defaultSuccessUrl("/").permitAll().
-//					and().
-//					logout().logoutUrl("/logout").deleteCookies("photosLoginCookie").logoutSuccessUrl("/login?msg=logout").permitAll().
-//					and().
-//				authorizeRequests().anyRequest().authenticated()
-//				;
+			// http.authorizeRequests().anyRequest().authenticated();
+			http.
+				authorizeRequests().antMatchers("/*.js").permitAll().
+					and().
+				formLogin().loginPage("/login").failureUrl("/login?msg=error").defaultSuccessUrl("/").permitAll().
+					and().
+				logout().logoutUrl("/logout").deleteCookies("photosLoginCookie").logoutSuccessUrl("/login?msg=logout").permitAll().
+					and().
+				authorizeRequests().anyRequest().authenticated()
+				;
 		}
 
 		@Bean
