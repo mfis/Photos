@@ -1,4 +1,4 @@
-package mfi.photos.server.logic;
+package mfi.photos.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

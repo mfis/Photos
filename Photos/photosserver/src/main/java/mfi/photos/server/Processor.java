@@ -1,4 +1,4 @@
-package mfi.photos.server.logic;
+package mfi.photos.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -8,13 +8,10 @@ import mfi.photos.shared.GalleryList.Item;
 import mfi.photos.shared.GalleryView;
 import mfi.photos.util.*;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.logging.LogFactory;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;

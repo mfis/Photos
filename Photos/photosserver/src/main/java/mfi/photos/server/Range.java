@@ -1,4 +1,4 @@
-package mfi.photos.server.logic;
+package mfi.photos.server;
 
 public class Range {
 

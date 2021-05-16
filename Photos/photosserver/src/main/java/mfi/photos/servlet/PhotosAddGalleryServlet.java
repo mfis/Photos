@@ -1,8 +1,7 @@
 package mfi.photos.servlet;
 
-import mfi.photos.server.logic.Processor;
-import mfi.photos.server.logic.UserService;
-import org.apache.commons.lang3.StringUtils;
+import mfi.photos.server.Processor;
+import mfi.photos.server.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;

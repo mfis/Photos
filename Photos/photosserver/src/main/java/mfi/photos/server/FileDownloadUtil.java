@@ -1,4 +1,4 @@
-package mfi.photos.server.logic;
+package mfi.photos.server;
 
 import mfi.photos.shared.AES;
 import mfi.photos.util.KeyAccess;

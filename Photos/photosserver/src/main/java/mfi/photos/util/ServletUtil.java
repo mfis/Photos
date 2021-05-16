@@ -1,7 +1,7 @@
 package mfi.photos.util;
 
-import mfi.photos.server.logic.ContextListener;
-import mfi.photos.server.logic.Processor;
+import mfi.photos.server.ContextListener;
+import mfi.photos.server.Processor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.CharacterPredicates;
 import org.apache.commons.text.RandomStringGenerator;
