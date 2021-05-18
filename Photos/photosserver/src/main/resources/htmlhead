@@ -6,16 +6,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes"></meta>
 <meta name="apple-mobile-web-app-status-bar-style" content="black"></meta>
 <meta name="theme-color" content="#000000" />
-<link rel="apple-touch-icon" sizes="114x114" href="apple-touch-icon-114x114.png?3" ></link>
-<link rel="apple-touch-icon" sizes="120x120" href="apple-touch-icon-120x120.png?3"></link>
-<link rel="apple-touch-icon" sizes="72x72" href="apple-touch-icon-72x72.png?3"></link>
-<link rel="apple-touch-icon" sizes="76x76" href="apple-touch-icon-76x76.png?3"></link>
-<link rel="apple-touch-icon" sizes="144x144" href="apple-touch-icon-144x144.png?3"></link>
-<link rel="apple-touch-icon" sizes="152x152" href="apple-touch-icon-152x152.png?3"></link>
-<link rel="icon" href="favicon.ico?4" type="image/x-icon"></link>
-<link rel="icon" sizes="152x152" href="apple-touch-icon-152x152.png?3">
-<link rel="shortcut icon" href="favicon.ico?4"></link>
-<link rel="stylesheet" href="style.css?12"></link>
-<script src='script.js?19'></script>
-<script src='blazy.js?1'></script>
+<link rel="apple-touch-icon" sizes="114x114" href="staticresources/apple-touch-icon-114x114.png?3" ></link>
+<link rel="apple-touch-icon" sizes="120x120" href="staticresources/apple-touch-icon-120x120.png?3"></link>
+<link rel="apple-touch-icon" sizes="72x72" href="staticresources/apple-touch-icon-72x72.png?3"></link>
+<link rel="apple-touch-icon" sizes="76x76" href="staticresources/apple-touch-icon-76x76.png?3"></link>
+<link rel="apple-touch-icon" sizes="144x144" href="staticresources/apple-touch-icon-144x144.png?3"></link>
+<link rel="apple-touch-icon" sizes="152x152" href="staticresources/apple-touch-icon-152x152.png?3"></link>
+<link rel="icon" href="staticresources/favicon.ico?4" type="image/x-icon"></link>
+<link rel="icon" sizes="152x152" href="staticresources/apple-touch-icon-152x152.png?3">
+<link rel="shortcut icon" href="staticresources/favicon.ico?4"></link>
+<link rel="stylesheet" href="staticresources/style.css?12"></link>
+<script src='staticresources/script.js?19'></script>
+<script src='staticresources/blazy.js?1'></script>
 <title>Photos</title>

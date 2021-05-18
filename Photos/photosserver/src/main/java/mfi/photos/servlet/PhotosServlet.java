@@ -1,5 +1,7 @@
 package mfi.photos.servlet;
 
+import lombok.extern.apachecommons.CommonsLog;
+import lombok.extern.log4j.Log4j;
 import mfi.photos.server.Processor;
 import mfi.photos.server.UserService;
 import mfi.photos.util.ServletUtil;
@@ -7,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,6 +22,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Controller
+@CommonsLog
 public class PhotosServlet {
 
 	private static final String UTF_8 = "UTF-8";
@@ -33,8 +37,9 @@ public class PhotosServlet {
 	private UserService userService;
 
 	@GetMapping("/login")
-	public @ResponseBody void login(HttpServletResponse response) throws IOException {
+	public @ResponseBody void login(HttpServletResponse response, @RequestParam(name = "msg", required = false) String msg) throws IOException {
 
+		log.info("login with msg=" + msg);
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
 		response.addHeader("Cache-Control", "no-cache");

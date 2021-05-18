@@ -22,13 +22,14 @@ public class SecurityConfig {
 
 		private final AuthService authService;
 
+		private final static String RES = "/staticresources/*.";
+
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
 			http.addFilterAfter(new UserAuthenticationFilter(authService), ConcurrentSessionFilter.class);
 
-			// http.authorizeRequests().anyRequest().authenticated();
 			http.
-				authorizeRequests().antMatchers("/*.js").permitAll().
+				authorizeRequests().antMatchers(RES + "js", RES + "css", RES + "png", RES + "ico").permitAll().
 					and().
 				formLogin().loginPage("/login").failureUrl("/login?msg=error").defaultSuccessUrl("/").permitAll().
 					and().

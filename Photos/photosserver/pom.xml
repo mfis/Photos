@@ -92,7 +92,7 @@
 				<version>1.4.0</version>
 				<configuration>
 					<webContentSourceDir>src/main/resources/orig</webContentSourceDir>
-					<webContentDestDir>src/main/resources/static</webContentDestDir>
+					<webContentDestDir>src/main/resources/static/staticresources</webContentDestDir>
 					<webContentTempDir>src/main/resources/static/temp</webContentTempDir>
 					<versionsMapFile/>
 				</configuration>

@@ -23,6 +23,13 @@ class SecurityConfigTest {
     private AuthService authService;
 
     @Test
+    void testStaticResourcesSuccessful() throws Exception {
+        given(authService.checkUserWithPassword(null, null)).willReturn(false);
+        mockMvc.perform(MockMvcRequestBuilders.get("/staticresources/script.js"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
     void testRootAuthSuccessful() throws Exception {
         given(authService.checkUserWithPassword("u", "p")).willReturn(true);
         mockMvc.perform(MockMvcRequestBuilders.get("/")
@@ -35,6 +42,14 @@ class SecurityConfigTest {
         given(authService.checkUserWithPassword(null, null)).willReturn(false);
         mockMvc.perform(MockMvcRequestBuilders.get("/"))
                 .andExpect(MockMvcResultMatchers.status().isFound())
-                .andExpect(MockMvcResultMatchers.redirectedUrl("/login"));
+                .andExpect(MockMvcResultMatchers.redirectedUrlPattern("*://*/login"));
+    }
+
+    @Test
+    void testPhotoAuthFailed() throws Exception {
+        given(authService.checkUserWithPassword(null, null)).willReturn(false);
+        mockMvc.perform(MockMvcRequestBuilders.get("/assets/album/photo.jpg"))
+                .andExpect(MockMvcResultMatchers.status().isFound())
+                .andExpect(MockMvcResultMatchers.redirectedUrlPattern("*://*/login"));
     }
 }
