@@ -8,7 +8,5 @@ import lombok.Value;
 @ToString
 public class UserPrincipal implements Principal {
 
-	private String name;
-
-	private String password;
+	String name;
 }

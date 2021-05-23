@@ -36,19 +36,20 @@ public class PhotosServlet {
 	@Autowired
 	private UserService userService;
 
-	@GetMapping("/login")
+	@RequestMapping("/login")
 	public @ResponseBody void login(HttpServletResponse response, @RequestParam(name = "msg", required = false) String msg) throws IOException {
 
-		log.info("login with msg=" + msg);
+		log.info("/login msg=" + msg);
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
 		response.addHeader("Cache-Control", "no-cache");
 		response.getWriter().print(processor.loginscreenHTML(null));
 	}
 
-	@GetMapping("/logoff")
-	public @ResponseBody void logoff(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	@GetMapping("/logout")
+	public @ResponseBody void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
+		log.info("/logout");
 		servletUtil.cookieDelete(request, response);
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
@@ -59,6 +60,7 @@ public class PhotosServlet {
 	@RequestMapping("/")
 	public @ResponseBody void response(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
+		log.info("/");
 		Optional<String> username = userService.lookupUserName();
 		if(username.isEmpty()){
 			response.setStatus(401);

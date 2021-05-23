@@ -1,7 +1,7 @@
 package mfi.photos.server;
 
+import mfi.photos.auth.UserPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -12,17 +12,10 @@ public class UserService {
     public Optional<String> lookupUserName(){
 
         Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if(principal ==null){
-            return Optional.empty();
+        if (principal instanceof UserPrincipal) {
+            return Optional.of(((UserPrincipal)principal).getName());
         }
-
-        String username;
-        if (principal instanceof UserDetails) {
-            username = ((UserDetails)principal).getUsername();
-        } else {
-            username = principal.toString();
-        }
-        return Optional.of(username);
+        return Optional.empty();
     }
 
 }

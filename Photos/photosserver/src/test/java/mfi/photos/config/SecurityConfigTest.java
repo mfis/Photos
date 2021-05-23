@@ -32,8 +32,8 @@ class SecurityConfigTest {
     @Test
     void testRootAuthSuccessful() throws Exception {
         given(authService.checkUserWithPassword("u", "p")).willReturn(true);
-        mockMvc.perform(MockMvcRequestBuilders.get("/")
-                .header("user", "u").header("pass", "p"))
+        mockMvc.perform(MockMvcRequestBuilders.post("/")
+                .param("login_user", "u").param("login_pass", "p"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
