@@ -3,6 +3,7 @@ package mfi.photos.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import mfi.photos.auth.AuthService;
+import mfi.photos.auth.LoginFailureHandler;
 import mfi.photos.auth.UserAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,6 +25,10 @@ public class SecurityConfig {
 
 		private final AuthService authService;
 
+		private final LoginFailureHandler failureHandler;
+
+		// private final UserAuthenticationFilter userAuthenticationFilter;
+
 		private final static String RES = "/staticresources/*.";
 
 		@Override
@@ -33,12 +38,15 @@ public class SecurityConfig {
 
 			http.
 					csrf().disable().
+					//authorizeRequests().antMatchers("/login").permitAll().
+					//and().
 					authorizeRequests().anyRequest().authenticated().
 					and().
 					addFilterBefore(new UserAuthenticationFilter(authService), ConcurrentSessionFilter.class).
-				formLogin().loginPage("/login").failureUrl("/login?msg=error").defaultSuccessUrl("/").permitAll().
+					// addFilterBefore(userAuthenticationFilter, ConcurrentSessionFilter.class).
+				formLogin().loginPage("/login").failureHandler(failureHandler).defaultSuccessUrl("/").permitAll().
 				and().
-				logout().logoutUrl("/logout").deleteCookies("photosLoginCookie").logoutSuccessUrl("/login?msg=logout").permitAll()
+				logout().logoutUrl("/logout").deleteCookies("photosLoginCookie").logoutSuccessUrl("/login?reason=logout").permitAll()
 				;
 		}
 

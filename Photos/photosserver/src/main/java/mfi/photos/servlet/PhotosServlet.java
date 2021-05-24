@@ -37,9 +37,9 @@ public class PhotosServlet {
 	private UserService userService;
 
 	@RequestMapping("/login")
-	public @ResponseBody void login(HttpServletResponse response, @RequestParam(name = "msg", required = false) String msg) throws IOException {
+	public @ResponseBody void login(HttpServletResponse response, @RequestParam(name = "reason", required = false) String reason) throws IOException {
 
-		log.info("/login msg=" + msg);
+		log.info("/login reason=" + reason);
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
 		response.addHeader("Cache-Control", "no-cache");
