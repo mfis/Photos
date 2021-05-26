@@ -47,14 +47,41 @@ class SecurityConfigTest {
     }
 
     @Test
-    void testRootAuthFailed() throws Exception {
+    void testRootAuthFailedHasCookiesNotAccepted() throws Exception {
+        given(authService.checkUserWithPassword("u", "p")).willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u"))));
+        mockMvc.perform(MockMvcRequestBuilders.post("/")
+                .param("login_user", "u").param("login_pass", "p").param("cookieok", "null"))
+                .andExpect(MockMvcResultMatchers.status().isFound())
+                .andExpect(MockMvcResultMatchers.redirectedUrl("/login?reason=cookies"));
+    }
+
+    @Test
+    void testRootAuthFailedWrongLoginData() throws Exception {
+        given(authService.checkUserWithPassword("u", "p")).willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u"))));
+        mockMvc.perform(MockMvcRequestBuilders.post("/")
+                .param("login_user", "x").param("login_pass", "y").param("cookieok", "true"))
+                .andExpect(MockMvcResultMatchers.status().isFound())
+                .andExpect(MockMvcResultMatchers.redirectedUrl("/login?reason=credentials"));
+    }
+
+    @Test
+    void testRootAuthFailedNoLoginData() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/"))
                 .andExpect(MockMvcResultMatchers.status().isFound())
                 .andExpect(MockMvcResultMatchers.redirectedUrlPattern("*://*/login"));
     }
 
     @Test
-    void testPhotoAuthFailed() throws Exception {
+    void testPhotoAuthFailedWrongLoginData() throws Exception {
+        given(authService.checkUserWithPassword("u", "p")).willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u"))));
+        mockMvc.perform(MockMvcRequestBuilders.get("/assets/album/photo.jpg")
+                .param("login_user", "x").param("login_pass", "y").param("cookieok", "true"))
+                .andExpect(MockMvcResultMatchers.status().isFound())
+                .andExpect(MockMvcResultMatchers.redirectedUrl("/login?reason=credentials"));
+    }
+
+    @Test
+    void testPhotoAuthFailedNoLoginData() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/assets/album/photo.jpg"))
                 .andExpect(MockMvcResultMatchers.status().isFound())
                 .andExpect(MockMvcResultMatchers.redirectedUrlPattern("*://*/login"));
