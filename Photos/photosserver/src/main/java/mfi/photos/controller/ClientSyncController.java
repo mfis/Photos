@@ -1,4 +1,4 @@
-package mfi.photos.servlet;
+package mfi.photos.controller;
 
 import mfi.photos.server.Processor;
 import mfi.photos.server.UserService;
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Controller
-public class PhotosAddGalleryServlet {
+public class ClientSyncController {
 
 	private static final String UTF_8 = "UTF-8";
 

@@ -1,0 +1,30 @@
+spring:
+  application:
+    name:               PhotosServer
+  main:
+    banner-mode:        off
+  jmx:
+    enabled:            false
+logging:
+  level:
+    org:
+      springframework:  WARN
+    mfi:
+      photos:           INFO
+server:
+  max-http-header-size: 20000
+  port:                 8082
+  tomcat:
+    threads:
+      min-spare:        2
+      max:              4
+  error:
+    whitelabel:
+      enabled:          false
+application:
+  identifier:           de_fimatas_photosserver
+login:
+  failure:
+    reason:
+      cookies:          Sie müssen den Datenschutzbestimmungen zustimmen, um die Anwendung nutzen zu können.
+      credentials:      Benutzername und/oder Passwort sind nicht korrekt.

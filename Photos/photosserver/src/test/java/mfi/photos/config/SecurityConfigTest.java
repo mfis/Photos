@@ -28,8 +28,13 @@ class SecurityConfigTest {
 
     @Test
     void testStaticResourcesSuccessful() throws Exception {
-        given(authService.checkUserWithPassword(null, null)).willReturn(Optional.empty());
         mockMvc.perform(MockMvcRequestBuilders.get("/staticresources/script.js"))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    void testLoginSiteSuccessful() throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.get("/login"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
     }
 
@@ -43,7 +48,6 @@ class SecurityConfigTest {
 
     @Test
     void testRootAuthFailed() throws Exception {
-        given(authService.checkUserWithPassword(null, null)).willReturn(Optional.empty());
         mockMvc.perform(MockMvcRequestBuilders.get("/"))
                 .andExpect(MockMvcResultMatchers.status().isFound())
                 .andExpect(MockMvcResultMatchers.redirectedUrlPattern("*://*/login"));
@@ -51,7 +55,6 @@ class SecurityConfigTest {
 
     @Test
     void testPhotoAuthFailed() throws Exception {
-        given(authService.checkUserWithPassword(null, null)).willReturn(Optional.empty());
         mockMvc.perform(MockMvcRequestBuilders.get("/assets/album/photo.jpg"))
                 .andExpect(MockMvcResultMatchers.status().isFound())
                 .andExpect(MockMvcResultMatchers.redirectedUrlPattern("*://*/login"));

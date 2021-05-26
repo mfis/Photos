@@ -1,11 +1,12 @@
-package mfi.photos.servlet;
+package mfi.photos.controller;
 
 import lombok.extern.apachecommons.CommonsLog;
-import lombok.extern.log4j.Log4j;
 import mfi.photos.server.Processor;
 import mfi.photos.server.UserService;
 import mfi.photos.util.ServletUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,7 +24,7 @@ import java.util.Optional;
 
 @Controller
 @CommonsLog
-public class PhotosServlet {
+public class WebController {
 
 	private static final String UTF_8 = "UTF-8";
 
@@ -36,6 +37,9 @@ public class PhotosServlet {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private Environment env;
+
 	@RequestMapping("/login")
 	public @ResponseBody void login(HttpServletResponse response, @RequestParam(name = "reason", required = false) String reason) throws IOException {
 
@@ -43,7 +47,14 @@ public class PhotosServlet {
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
 		response.addHeader("Cache-Control", "no-cache");
-		response.getWriter().print(processor.loginscreenHTML(null));
+		response.getWriter().print(processor.loginscreenHTML(loginReasonText(reason)));
+	}
+
+	private String loginReasonText(String key){
+		if(StringUtils.isBlank(key)){
+			return null;
+		}
+		return env.getProperty("login.failure.reason." + key);
 	}
 
 	@GetMapping("/logout")
@@ -63,7 +74,7 @@ public class PhotosServlet {
 		log.info("/");
 		Optional<String> username = userService.lookupUserName();
 		if(username.isEmpty()){
-			response.setStatus(401);
+			response.setStatus(403);
 			return;
 		}
 

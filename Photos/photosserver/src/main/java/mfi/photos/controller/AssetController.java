@@ -1,4 +1,4 @@
-package mfi.photos.servlet;
+package mfi.photos.controller;
 
 import mfi.photos.server.FileDownloadUtil;
 import mfi.photos.server.Processor;
@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.Optional;
 
 @Controller
-public class PhotosAssetServlet {
+public class AssetController {
 
 	@Autowired
 	private Processor processor;
@@ -47,7 +47,7 @@ public class PhotosAssetServlet {
 		Optional<String> username = userService.lookupUserName();
 		if(username.isEmpty()){
 			// TODO: check user rights to read specific album
-			response.setStatus(401);
+			response.setStatus(403);
 			return;
 		}
 
