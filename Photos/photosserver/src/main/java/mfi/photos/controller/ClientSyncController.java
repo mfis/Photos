@@ -2,6 +2,7 @@ package mfi.photos.controller;
 
 import mfi.photos.server.Processor;
 import mfi.photos.server.UserService;
+import mfi.photos.util.RequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,14 +27,13 @@ public class ClientSyncController {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private RequestUtil requestUtil;
+
 	@RequestMapping("/PhotosAddGalleryServlet")
 	public void response(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		Optional<String> username = userService.lookupUserName();
-		if(username.isEmpty()){
-			response.setStatus(401);
-			return;
-		}
+		requestUtil.assertLoggedInUser();
 
 		Map<String, String> params = new HashMap<>();
 		Enumeration<String> parameterNames = request.getParameterNames();
@@ -58,10 +58,10 @@ public class ClientSyncController {
 			out.print(processor.checksumFromImage(params));
 		} else if (params.containsKey("readlist")) {
 			// -> GalleryList
-			out.print(processor.listJson(username.get(), null, 0, true));
+			out.print(processor.listJson(null, 0, true));
 		} else if (params.containsKey("readalbum")) {
 			// -> GalleryView
-			out.println(processor.galleryJson(username.get(), params.get("album_key")));
+			out.println(processor.galleryJson(params.get("album_key")));
 		} else if (params.containsKey("cleanup")) {
 			processor.cleanUp(params.get("cleanup"), params.get("cleanupListHash"));
 		} else if (params.containsKey("testConnection")) {

@@ -158,8 +158,9 @@ public class Processor {
 		}
 	}
 
-	public String galleryJson(String user, String key) throws IOException {
+	public String galleryJson(String key) throws IOException {
 
+		String user = userService.lookupUserName().get();
 		if (!user.equals(properties.getProperty("technicalUser"))) {
 			return null;
 		}
@@ -254,12 +255,7 @@ public class Processor {
 			yPos = Integer.parseInt(y);
 		}
 
-		String userForList = user;
-		if (user.equals(properties.getProperty("technicalUser")) && params.containsKey("viewUser")) {
-			userForList = params.get("viewUser");
-		}
-
-		String json = listJson(userForList, s, yPos, false);
+		String json = listJson(s, yPos, false);
 
 		String html = IOUtil.readContentFromFileInClasspath("list.html");
 		String htmlHead = IOUtil.readContentFromFileInClasspath("htmlhead");
@@ -268,8 +264,9 @@ public class Processor {
 		sb.append(html);
 	}
 
-	public String listJson(String user, String s, int yPos, boolean withHashesAndUsers) {
+	public String listJson(String s, int yPos, boolean withHashesAndUsers) {
 
+		String user = userService.lookupUserName().get();
 		Gson gson = new GsonBuilder().create();
 		String jsonDir = lookupJsonDir(properties);
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);

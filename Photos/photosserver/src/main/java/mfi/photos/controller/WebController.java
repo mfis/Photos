@@ -3,7 +3,7 @@ package mfi.photos.controller;
 import lombok.extern.apachecommons.CommonsLog;
 import mfi.photos.server.Processor;
 import mfi.photos.server.UserService;
-import mfi.photos.util.ServletUtil;
+import mfi.photos.util.RequestUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -32,10 +32,10 @@ public class WebController {
 	private Processor processor;
 
     @Autowired
-    private ServletUtil servletUtil;
+    private RequestUtil servletUtil;
 
 	@Autowired
-	private UserService userService;
+	private RequestUtil requestUtil;
 
 	@Autowired
 	private Environment env;
@@ -43,7 +43,7 @@ public class WebController {
 	@RequestMapping("/login")
 	public @ResponseBody void login(HttpServletResponse response, @RequestParam(name = "reason", required = false) String reason) throws IOException {
 
-		log.info("/login reason=" + reason);
+		log.debug("/login reason=" + reason);
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
 		response.addHeader("Cache-Control", "no-cache");
@@ -60,7 +60,7 @@ public class WebController {
 	@GetMapping("/logout")
 	public @ResponseBody void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		log.info("/logout");
+		log.debug("/logout");
 		servletUtil.cookieDelete(request, response);
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
@@ -71,12 +71,8 @@ public class WebController {
 	@RequestMapping("/")
 	public @ResponseBody void response(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		log.info("/");
-		Optional<String> username = userService.lookupUserName();
-		if(username.isEmpty()){
-			response.setStatus(403);
-			return;
-		}
+		log.debug("/");
+		requestUtil.assertLoggedInUser();
 
 		Map<String, String> params = new HashMap<>();
 		Enumeration<String> parameterNames = request.getParameterNames();

@@ -3,6 +3,7 @@ package mfi.photos.controller;
 import mfi.photos.server.FileDownloadUtil;
 import mfi.photos.server.Processor;
 import mfi.photos.server.UserService;
+import mfi.photos.util.RequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +26,9 @@ public class AssetController {
     @Autowired
 	private UserService userService;
 
+    @Autowired
+	private RequestUtil requestUtil;
+
 	private static final FileDownloadUtil fileDownloadUtil = new FileDownloadUtil();
 
 	@RequestMapping(value = { "/assets/**" }, method = { RequestMethod.HEAD })
@@ -42,14 +46,8 @@ public class AssetController {
 	private void responseInternal(HttpServletRequest request, HttpServletResponse response, boolean content)
 			throws IOException {
 
+		requestUtil.assertLoggedInUser();
 		File file = processor.lookupAssetFile(request.getRequestURI());
-
-		Optional<String> username = userService.lookupUserName();
-		if(username.isEmpty()){
-			// TODO: check user rights to read specific album
-			response.setStatus(403);
-			return;
-		}
 
 		if (!file.exists()) {
 			response.setStatus(404);

@@ -11,7 +11,6 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.session.ConcurrentSessionFilter;
 
 @EnableWebSecurity
@@ -23,8 +22,6 @@ public class SecurityConfig {
 	public static class UserWebSecurity extends WebSecurityConfigurerAdapter {
 
 		private final UserAuthenticationFilter userAuthenticationFilter;
-
-		private final static String RES = "/staticresources/*.";
 
 		@Override
 		protected void configure(HttpSecurity http) throws Exception {
@@ -41,6 +38,7 @@ public class SecurityConfig {
 
 		@Override
 		public void configure(WebSecurity web) {
+			final String RES = "/staticresources/*.";
 			web.ignoring().antMatchers(RES + "js", RES + "css", RES + "png", RES + "ico");
 			web.ignoring().mvcMatchers("/login");
 		}
