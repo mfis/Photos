@@ -29,12 +29,23 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<!-- Dependency versions -->
 		<spring-boot.version>2.4.5</spring-boot.version>
+		<files-api.version>1.0</files-api.version>
 		<!-- Plugin versions -->
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
 		<StaticResourceProcessing.version>1.5.1</StaticResourceProcessing.version>
 		<lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
 		<dependency-check-maven.version>6.1.5</dependency-check-maven.version>
 	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>de.fimatas.files</groupId>
+				<artifactId>files-api</artifactId>
+				<version>${files-api.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<build>
 		<pluginManagement>

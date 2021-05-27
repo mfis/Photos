@@ -1,8 +1,10 @@
 package mfi.photos.config;
 
+import com.google.gson.GsonBuilder;
 import mfi.photos.auth.AuthService;
 import mfi.photos.auth.UserAuthentication;
 import mfi.photos.auth.UserPrincipal;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -25,6 +27,11 @@ class SecurityConfigTest {
 
     @MockBean
     private AuthService authService;
+
+    @BeforeEach
+    public void beforeEach(){
+        given(authService.lookupUserName()).willCallRealMethod();
+    }
 
     @Test
     void testStaticResourcesSuccessful() throws Exception {

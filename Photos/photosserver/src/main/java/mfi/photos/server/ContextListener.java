@@ -21,13 +21,8 @@ public class ContextListener {
 
 	@PostConstruct
 	public void contextInitialized() {
-
 		logger.info("Context initializing...");
-
-		Gson gson = new GsonBuilder().create();
-		String jsonDir = processor.lookupJsonDir(processor.getApplicationProperties());
-		GalleryViewCache.getInstance().refresh(jsonDir, gson);
-
+		GalleryViewCache.getInstance().refresh(processor.lookupJsonDir(), new GsonBuilder().create());
 		logger.info("Context initialized.");
 	}
 

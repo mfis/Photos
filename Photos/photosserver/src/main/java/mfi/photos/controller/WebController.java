@@ -2,7 +2,6 @@ package mfi.photos.controller;
 
 import lombok.extern.apachecommons.CommonsLog;
 import mfi.photos.server.Processor;
-import mfi.photos.server.UserService;
 import mfi.photos.util.RequestUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,6 @@ import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Controller
 @CommonsLog

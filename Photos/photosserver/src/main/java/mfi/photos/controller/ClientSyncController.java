@@ -1,7 +1,7 @@
 package mfi.photos.controller;
 
+import mfi.photos.auth.AuthService;
 import mfi.photos.server.Processor;
-import mfi.photos.server.UserService;
 import mfi.photos.util.RequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,7 +14,6 @@ import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 @Controller
 public class ClientSyncController {
@@ -25,7 +24,7 @@ public class ClientSyncController {
 	private Processor processor;
 
 	@Autowired
-	private UserService userService;
+	private AuthService authService;
 
 	@Autowired
 	private RequestUtil requestUtil;

@@ -1,31 +1,27 @@
 package mfi.photos.util;
 
-import mfi.photos.server.ContextListener;
-import mfi.photos.server.Processor;
-import mfi.photos.server.UserService;
+import mfi.photos.auth.AuthService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.CharacterPredicates;
 import org.apache.commons.text.RandomStringGenerator;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Optional;
 import java.util.UUID;
 
 @Component
 public class RequestUtil {
 
     @Autowired
-    private UserService userService;
+    private AuthService authService;
 
     private static final String COOKIE_NAME = "PhotosLoginCookie";
 
     public void assertLoggedInUser(){
-        if(userService.lookupUserName().isEmpty()){
+        if(authService.lookupUserName().isEmpty()){
             throw new IllegalCallerException("No known user logged in");
         }
     }

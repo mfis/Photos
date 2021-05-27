@@ -1,8 +1,8 @@
 package mfi.photos.controller;
 
+import mfi.photos.auth.AuthService;
 import mfi.photos.server.FileDownloadUtil;
 import mfi.photos.server.Processor;
-import mfi.photos.server.UserService;
 import mfi.photos.util.RequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.util.Optional;
 
 @Controller
 public class AssetController {
@@ -23,8 +22,8 @@ public class AssetController {
 	@Autowired
 	private Processor processor;
 
-    @Autowired
-	private UserService userService;
+	@Autowired
+	private AuthService authService;
 
     @Autowired
 	private RequestUtil requestUtil;

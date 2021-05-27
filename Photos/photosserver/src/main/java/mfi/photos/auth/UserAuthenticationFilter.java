@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
@@ -24,6 +26,12 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 
 	@Autowired
 	private AuthService authService;
+
+	@Autowired
+	private Environment env;
+
+	@Value("${server.servlet.session.cookie.secure}")
+	private String cookieSecure;
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)

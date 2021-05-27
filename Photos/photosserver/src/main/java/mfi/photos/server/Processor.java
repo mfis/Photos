@@ -2,6 +2,7 @@ package mfi.photos.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import mfi.photos.auth.AuthService;
 import mfi.photos.shared.AES;
 import mfi.photos.shared.GalleryList;
 import mfi.photos.shared.GalleryList.Item;
@@ -14,6 +15,7 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
@@ -23,13 +25,12 @@ import java.util.*;
 public class Processor {
 
 	@Autowired
-	private UserService userService;
+	private AuthService authService;
 
-	// TODO: inject
-	Properties properties;
+	@Autowired
+	private Environment env;
 
 	public Processor() {
-		properties = getApplicationProperties();
 		if (KeyAccess.getInstance().getUptime() == null) {
 			KeyAccess.getInstance().setUptime(String.valueOf(System.currentTimeMillis()));
 		}
@@ -38,7 +39,7 @@ public class Processor {
 	public File lookupAssetFile(String path) {
 
 		String base = lookupPhotosDir();
-		path = StringUtils.removeStart(path, properties.getProperty("assets.uri").trim());
+		path = StringUtils.removeStart(path, env.getProperty("assets.uri").trim());
 		String filePath = base + path + AES.FILE_SUFFIX;
 
 		return new File(filePath);
@@ -60,7 +61,7 @@ public class Processor {
 	}
 
 	private String lookupPhotosDir() {
-		String photosDir = properties.getProperty("photosDir");
+		String photosDir = env.getProperty("photosDir");
 		if (!photosDir.endsWith("/")) {
 			photosDir = photosDir + "/";
 		}
@@ -84,7 +85,7 @@ public class Processor {
 	public void saveNewGallery(Map<String, String> params) throws UnsupportedEncodingException, IOException {
 
 		Gson gson = new GsonBuilder().create();
-		String jsonDir = lookupJsonDir(properties);
+		String jsonDir = lookupJsonDir();
 		String base64String = params.get("saveGallery");
 		String newJson = new String(Base64.getDecoder().decode(base64String), "utf-8");
 		GalleryView galleryView = gson.fromJson(newJson, GalleryView.class);
@@ -97,7 +98,7 @@ public class Processor {
 		String keyOld = params.get("keyOld");
 
 		Gson gson = new GsonBuilder().create();
-		String jsonDir = lookupJsonDir(properties);
+		String jsonDir = lookupJsonDir();
 		String base64String = params.get("renameGallery");
 		String newJson = new String(Base64.getDecoder().decode(base64String), "utf-8");
 		GalleryView galleryView = gson.fromJson(newJson, GalleryView.class);
@@ -126,13 +127,13 @@ public class Processor {
 	public void galleryHTML(Map<String, String> params, StringBuilder sb)
 			throws IOException {
 
-		String user = userService.lookupUserName().get();
+		String user = authService.lookupUserName().get();
 
 		String html = IOUtil.readContentFromFileInClasspath("gallery.html");
 		String htmlHead = IOUtil.readContentFromFileInClasspath("htmlhead");
 
 		Gson gson = new GsonBuilder().create();
-		String jsonDir = lookupJsonDir(properties);
+		String jsonDir = lookupJsonDir();
 		String key = StringEscapeUtils.escapeHtml4(params.get("gallery"));
 		File file = new File(jsonDir + key + ".json");
 		if (file.exists() && file.isFile() && file.canRead()) {
@@ -140,8 +141,8 @@ public class Processor {
 			GalleryView galleryView = gson.fromJson(json, GalleryView.class);
 			galleryView.truncateHashes();
 			galleryView.setBaseURL(StringUtils.replace(galleryView.getBaseURL(),
-					properties.getProperty("assets.path.migration.from"),
-					properties.getProperty("assets.path.migration.to")));
+					env.getProperty("assets.path.migration.from"),
+					env.getProperty("assets.path.migration.to")));
 			DisplayNameUtil.createDisplayName(galleryView);
 			json = gson.toJson(galleryView);
 			if (galleryView.getUsersAsList().contains(user)) {
@@ -160,12 +161,12 @@ public class Processor {
 
 	public String galleryJson(String key) throws IOException {
 
-		String user = userService.lookupUserName().get();
-		if (!user.equals(properties.getProperty("technicalUser"))) {
+		String user = authService.lookupUserName().get();
+		if (!user.equals(env.getProperty("technicalUser"))) {
 			return null;
 		}
 
-		String jsonDir = lookupJsonDir(properties);
+		String jsonDir = lookupJsonDir();
 		File file = new File(jsonDir + key + ".json");
 		String json = FileUtils.readFileToString(file, "UTF-8");
 		return json;
@@ -179,7 +180,7 @@ public class Processor {
 		}
 
 		Gson gson = new GsonBuilder().create();
-		String jsonDir = lookupJsonDir(properties);
+		String jsonDir = lookupJsonDir();
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 
 		// Delete unreferenced album jsons
@@ -192,7 +193,7 @@ public class Processor {
 		Set<String> albumKeys = GalleryViewCache.getInstance().keySet();
 		for (String albumKey : albumKeys) {
 			if (!clientGalleryAlbumKeys.contains(albumKey)) {
-				File albumJsonToDelete = new File(lookupJsonDir(properties) + albumKey + ".json");
+				File albumJsonToDelete = new File(lookupJsonDir() + albumKey + ".json");
 				if (albumJsonToDelete.exists()) {
 					FileUtils.deleteQuietly(albumJsonToDelete);
 				}
@@ -240,13 +241,13 @@ public class Processor {
 		html = StringUtils.replace(html, "<!-- HEAD -->", htmlHead);
 		html = StringUtils.replace(html, "/*JSONFILE*/", StringUtils.trimToEmpty(message));
 		html = StringUtils.replace(html, "/*LAWLINK*/",
-				StringUtils.trimToEmpty(properties.getProperty("linkToLawSite")));
+				StringUtils.trimToEmpty(env.getProperty("linkToLawSite")));
 		return html;
 	}
 
 	public void listHTML(Map<String, String> params, StringBuilder sb) throws IOException {
 
-		String user = userService.lookupUserName().get();
+		String user = authService.lookupUserName().get();
 
 		String y = params.get("y");
 		String s = StringUtils.trimToEmpty(params.get("s"));
@@ -266,9 +267,9 @@ public class Processor {
 
 	public String listJson(String s, int yPos, boolean withHashesAndUsers) {
 
-		String user = userService.lookupUserName().get();
+		String user = authService.lookupUserName().get();
 		Gson gson = new GsonBuilder().create();
-		String jsonDir = lookupJsonDir(properties);
+		String jsonDir = lookupJsonDir();
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 
 		List<GalleryView> galleryViews = new LinkedList<GalleryView>();
@@ -277,7 +278,7 @@ public class Processor {
 		for (String string : keySet) {
 			GalleryView galleryView = GalleryViewCache.getInstance().read(string);
 			if (galleryView.getUsersAsList().contains(user)
-					|| user.equals(properties.getProperty("technicalUser"))) {
+					|| user.equals(env.getProperty("technicalUser"))) {
 				galleryViews.add(galleryView);
 			}
 		}
@@ -296,26 +297,12 @@ public class Processor {
 		return json;
 	}
 
-	public String lookupJsonDir(Properties properties) {
-		String dir = properties.getProperty("listDir");
+	public String lookupJsonDir() {
+		String dir = env.getProperty("listDir");
 		if (!StringUtils.endsWith(dir, "/") && !StringUtils.endsWith(dir, "\\")) {
 			dir = dir + File.separatorChar;
 		}
 		return dir;
-	}
-
-	public Properties getApplicationProperties() {
-
-		Properties properties = new Properties();
-		String path = System.getProperty("user.home") + "/documents/config/photos.properties";
-
-		try {
-			properties.load(new FileInputStream(path));
-			properties.setProperty("FILE", path);
-			return properties;
-		} catch (Exception e) {
-			throw new RuntimeException("Properties could not be loaded", e);
-		}
 	}
 
 }
