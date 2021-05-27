@@ -1,9 +1,9 @@
 package mfi.photos.config;
 
-import com.google.gson.GsonBuilder;
 import mfi.photos.auth.AuthService;
 import mfi.photos.auth.UserAuthentication;
 import mfi.photos.auth.UserPrincipal;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +31,8 @@ class SecurityConfigTest {
     @BeforeEach
     public void beforeEach(){
         given(authService.lookupUserName()).willCallRealMethod();
+        given(authService.checkUserWithPassword("u", "p", null)).
+                willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u"), StringUtils.EMPTY)));
     }
 
     @Test
@@ -47,7 +49,6 @@ class SecurityConfigTest {
 
     @Test
     void testRootAuthSuccessful() throws Exception {
-        given(authService.checkUserWithPassword("u", "p")).willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u"))));
         mockMvc.perform(MockMvcRequestBuilders.post("/")
                 .param("login_user", "u").param("login_pass", "p").param("cookieok", "true"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -55,7 +56,6 @@ class SecurityConfigTest {
 
     @Test
     void testRootAuthFailedHasCookiesNotAccepted() throws Exception {
-        given(authService.checkUserWithPassword("u", "p")).willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u"))));
         mockMvc.perform(MockMvcRequestBuilders.post("/")
                 .param("login_user", "u").param("login_pass", "p").param("cookieok", "null"))
                 .andExpect(MockMvcResultMatchers.status().isFound())
@@ -64,7 +64,6 @@ class SecurityConfigTest {
 
     @Test
     void testRootAuthFailedWrongLoginData() throws Exception {
-        given(authService.checkUserWithPassword("u", "p")).willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u"))));
         mockMvc.perform(MockMvcRequestBuilders.post("/")
                 .param("login_user", "x").param("login_pass", "y").param("cookieok", "true"))
                 .andExpect(MockMvcResultMatchers.status().isFound())
@@ -80,7 +79,6 @@ class SecurityConfigTest {
 
     @Test
     void testPhotoAuthFailedWrongLoginData() throws Exception {
-        given(authService.checkUserWithPassword("u", "p")).willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u"))));
         mockMvc.perform(MockMvcRequestBuilders.get("/assets/album/photo.jpg")
                 .param("login_user", "x").param("login_pass", "y").param("cookieok", "true"))
                 .andExpect(MockMvcResultMatchers.status().isFound())

@@ -18,7 +18,9 @@ public class RequestUtil {
     @Autowired
     private AuthService authService;
 
-    private static final String COOKIE_NAME = "PhotosLoginCookie";
+    public static final String HEADER_USER_AGENT = "user-agent";
+
+    public static final String COOKIE_NAME = "PhotosLoginCookie";
 
     public void assertLoggedInUser(){
         if(authService.lookupUserName().isEmpty()){
@@ -26,42 +28,4 @@ public class RequestUtil {
         }
     }
 
-    public String setNewCookie(HttpServletRequest request, HttpServletResponse response, String loginUser) {
-
-        String uuid = UUID.randomUUID().toString() + "_" + new RandomStringGenerator.Builder().withinRange('0', 'z')
-            .filteredBy(CharacterPredicates.LETTERS, CharacterPredicates.DIGITS).build().generate(3600);
-        cookieWrite(response, uuid);
-
-        return uuid;
-    }
-
-    public String cookieRead(HttpServletRequest request) {
-
-        Cookie[] cookies = request.getCookies();
-        if (cookies == null) {
-            return null;
-        }
-        for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(COOKIE_NAME)) {
-                return StringUtils.trimToNull(cookie.getValue());
-            }
-        }
-        return null;
-    }
-
-    public void cookieDelete(HttpServletRequest request, HttpServletResponse response) {
-
-        Cookie cookie = new Cookie(COOKIE_NAME, "");
-        cookie.setMaxAge(0);
-        cookie.setHttpOnly(true);
-        response.addCookie(cookie);
-    }
-
-    private void cookieWrite(HttpServletResponse response, String value) {
-
-        Cookie cookie = new Cookie(COOKIE_NAME, value);
-        cookie.setMaxAge(60 * 60 * 24 * 92);
-        cookie.setHttpOnly(true);
-        response.addCookie(cookie);
-    }
 }

@@ -1,18 +1,21 @@
 package mfi.photos.auth;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 @RequiredArgsConstructor
 @Getter
 public class UserAuthentication implements Authentication {
 
 	private final UserPrincipal principal;
+
+	private final String newToken;
 
 	@Setter
 	private boolean authenticated = true;

@@ -59,7 +59,7 @@ public class WebController {
 	public @ResponseBody void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
 		log.debug("/logout");
-		servletUtil.cookieDelete(request, response);
+		// TODO: servletUtil.cookieDelete(request, response);
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
 		response.addHeader("Cache-Control", "no-cache");
