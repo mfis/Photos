@@ -2,6 +2,7 @@ package mfi.photos.auth;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
+import mfi.photos.util.KeyAccess;
 import mfi.photos.util.RequestUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 	@Autowired
 	private AuthService authService;
 
+	@Autowired
+	private RequestUtil requestUtil;
+
 	@Value("${server.servlet.session.cookie.secure}")
 	private String cookieSecure;
 
@@ -43,7 +47,7 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 			if(hasUserAcceptedCookies(req)){
 				Optional<UserAuthentication> optionalUserAuthentication = tryToLoginWithUserCredentials(req);
 				if(optionalUserAuthentication.isPresent()){
-					SecurityContextHolder.getContext().setAuthentication(optionalUserAuthentication.get());
+					requestUtil.defineUserForRequest(optionalUserAuthentication.get());
 					cookieWrite(resp, optionalUserAuthentication.get().getNewToken());
 				}else{
 					sendRedirect(resp, "credentials");
@@ -53,9 +57,32 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 				sendRedirect(resp, "cookies");
 				return;
 			}
+
+		} else if(isLoginWithToken(req)){
+			Optional<UserAuthentication> optionalUserAuthentication = tryToLoginWithToken(req);
+			if(optionalUserAuthentication.isPresent()){
+				requestUtil.defineUserForRequest(optionalUserAuthentication.get());
+				if(optionalUserAuthentication.get().getNewToken()!=null){
+					cookieWrite(resp, optionalUserAuthentication.get().getNewToken());
+				}
+			}else{
+				sendRedirect(resp, "token");
+				return;
+			}
+		}
+
+		if (false && !KeyAccess.getInstance().isKeySet() && requestUtil.lookupUserPrincipal().isPresent()) {
+			Optional<String> secureKey = authService.requestSecureKey(requestUtil.lookupUserPrincipal().get().getToken(), lookupUserAgent(req));
+			if(secureKey.isPresent()){
+				KeyAccess.getInstance().setKey(secureKey.get());
+			}
 		}
 
 		chain.doFilter(req, resp);
+	}
+
+	private boolean isLoginWithToken(ServletRequest req) {
+		return StringUtils.isNotBlank(cookieRead(req));
 	}
 
 	private void sendRedirect(ServletResponse resp, String reasonKey) throws IOException{
@@ -72,12 +99,21 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 	}
 
 	private Optional<UserAuthentication> tryToLoginWithUserCredentials(ServletRequest req){
-		return authService.checkUserWithPassword(req.getParameter("login_user"), req.getParameter("login_pass"), ((HttpServletRequest)req).getHeader(RequestUtil.HEADER_USER_AGENT));
+		return authService.checkUserWithPassword(req.getParameter("login_user"), req.getParameter("login_pass"), lookupUserAgent(req));
 	}
 
-	private String cookieRead(HttpServletRequest request) {
+	private String lookupUserAgent(ServletRequest req) {
+		return ((HttpServletRequest)req).getHeader(RequestUtil.HEADER_USER_AGENT);
+	}
 
-		Cookie[] cookies = request.getCookies();
+	private Optional<UserAuthentication> tryToLoginWithToken(ServletRequest req) {
+		boolean isInitialRequest = !req.getParameterNames().hasMoreElements();
+		return authService.checkUserWithToken(cookieRead(req), lookupUserAgent(req), isInitialRequest);
+	}
+
+	private String cookieRead(ServletRequest request) {
+
+		Cookie[] cookies = ((HttpServletRequest)request).getCookies();
 		if (cookies == null) {
 			return null;
 		}

@@ -4,11 +4,14 @@ import lombok.extern.apachecommons.CommonsLog;
 import mfi.files.api.DeviceType;
 import mfi.files.api.TokenResult;
 import mfi.files.api.UserService;
+import mfi.photos.util.RequestUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import javax.servlet.ServletRequest;
 import java.util.Optional;
 
 @Component
@@ -18,6 +21,9 @@ public class AuthService {
     @Autowired
     private UserService userService;
 
+    @Value("${technicalUser}")
+    private String technicalUser;
+
     public Optional<UserAuthentication> checkUserWithPassword(String user, String password, String userAgent){
 
         String loginUser = StringUtils.trimToEmpty(user);
@@ -25,19 +31,40 @@ public class AuthService {
         TokenResult tokenResult =
                 userService.createToken(loginUser, loginPass, userAgent, DeviceType.BROWSER);
         if (tokenResult.isCheckOk()) {
-            return Optional.of(new UserAuthentication(new UserPrincipal(user), tokenResult.getNewToken()));
+            return Optional.of(new UserAuthentication(new UserPrincipal(user, tokenResult.getNewToken()), tokenResult.getNewToken()));
         } else {
             return Optional.empty();
         }
     }
 
-    public Optional<String> lookupUserName(){
+    public Optional<UserAuthentication> checkUserWithToken(String token, String userAgent, boolean isInitialRequest) {
 
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UserPrincipal) {
-            return Optional.of(((UserPrincipal)principal).getName());
+        String user = userService.userNameFromLoginCookie(token);
+        TokenResult tokenResult = userService.checkToken(user, token,
+                userAgent, DeviceType.BROWSER, !isInitialRequest);
+
+        if (tokenResult.isCheckOk()) {
+            if(tokenResult.getNewToken()==null){
+                return Optional.of(new UserAuthentication(new UserPrincipal(user, token), null));
+            }else{
+                return Optional.of(new UserAuthentication(new UserPrincipal(user, tokenResult.getNewToken()), tokenResult.getNewToken()));
+            }
+        } else {
+            return Optional.empty();
         }
-        return Optional.empty();
+    }
+
+    public Optional<String> requestSecureKey(String token, String userAgent){
+
+        String user = userService.userNameFromLoginCookie(token);
+
+        TokenResult result = userService.readExternalKey(user, token,
+                userAgent, DeviceType.BROWSER, technicalUser);
+        if(result.isCheckOk()){
+            return Optional.of(result.getNewToken());
+        }else{
+            return Optional.empty();
+        }
     }
 
 }

@@ -3,6 +3,7 @@ package mfi.photos.config;
 import mfi.photos.auth.AuthService;
 import mfi.photos.auth.UserAuthentication;
 import mfi.photos.auth.UserPrincipal;
+import mfi.photos.util.RequestUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,9 +31,8 @@ class SecurityConfigTest {
 
     @BeforeEach
     public void beforeEach(){
-        given(authService.lookupUserName()).willCallRealMethod();
         given(authService.checkUserWithPassword("u", "p", null)).
-                willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u"), StringUtils.EMPTY)));
+                willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u", "t"), StringUtils.EMPTY)));
     }
 
     @Test

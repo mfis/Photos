@@ -2,7 +2,6 @@ package mfi.photos.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import mfi.photos.auth.AuthService;
 import mfi.photos.shared.AES;
 import mfi.photos.shared.GalleryList;
 import mfi.photos.shared.GalleryList.Item;
@@ -25,7 +24,7 @@ import java.util.*;
 public class Processor {
 
 	@Autowired
-	private AuthService authService;
+	private RequestUtil requestUtil;
 
 	@Autowired
 	private Environment env;
@@ -127,7 +126,7 @@ public class Processor {
 	public void galleryHTML(Map<String, String> params, StringBuilder sb)
 			throws IOException {
 
-		String user = authService.lookupUserName().get();
+		String user = requestUtil.lookupUserPrincipal().get().getName();
 
 		String html = IOUtil.readContentFromFileInClasspath("gallery.html");
 		String htmlHead = IOUtil.readContentFromFileInClasspath("htmlhead");
@@ -161,7 +160,7 @@ public class Processor {
 
 	public String galleryJson(String key) throws IOException {
 
-		String user = authService.lookupUserName().get();
+		String user = requestUtil.lookupUserPrincipal().get().getName();
 		if (!user.equals(env.getProperty("technicalUser"))) {
 			return null;
 		}
@@ -247,7 +246,7 @@ public class Processor {
 
 	public void listHTML(Map<String, String> params, StringBuilder sb) throws IOException {
 
-		String user = authService.lookupUserName().get();
+		String user = requestUtil.lookupUserPrincipal().get().getName();
 
 		String y = params.get("y");
 		String s = StringUtils.trimToEmpty(params.get("s"));
@@ -267,7 +266,7 @@ public class Processor {
 
 	public String listJson(String s, int yPos, boolean withHashesAndUsers) {
 
-		String user = authService.lookupUserName().get();
+		String user = requestUtil.lookupUserPrincipal().get().getName();
 		Gson gson = new GsonBuilder().create();
 		String jsonDir = lookupJsonDir();
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);

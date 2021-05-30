@@ -1,16 +1,13 @@
 package mfi.photos.util;
 
 import mfi.photos.auth.AuthService;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.text.CharacterPredicates;
-import org.apache.commons.text.RandomStringGenerator;
+import mfi.photos.auth.UserAuthentication;
+import mfi.photos.auth.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.util.UUID;
+import java.util.Optional;
 
 @Component
 public class RequestUtil {
@@ -23,9 +20,22 @@ public class RequestUtil {
     public static final String COOKIE_NAME = "PhotosLoginCookie";
 
     public void assertLoggedInUser(){
-        if(authService.lookupUserName().isEmpty()){
+        if(lookupUserPrincipal().isEmpty()){
             throw new IllegalCallerException("No known user logged in");
         }
+    }
+
+    public void defineUserForRequest(UserAuthentication userAuthentication){
+        SecurityContextHolder.getContext().setAuthentication(userAuthentication);
+    }
+
+    public Optional<UserPrincipal> lookupUserPrincipal(){
+
+        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (principal instanceof UserPrincipal) {
+            return Optional.of(((UserPrincipal)principal));
+        }
+        return Optional.empty();
     }
 
 }

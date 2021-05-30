@@ -28,3 +28,4 @@ login:
     reason:
       cookies:          Sie müssen den Datenschutzbestimmungen zustimmen, um die Anwendung nutzen zu können.
       credentials:      Benutzername und/oder Passwort sind nicht korrekt.
+      token:            Die gespeicherte Anmeldedaten sind nicht korrekt.
