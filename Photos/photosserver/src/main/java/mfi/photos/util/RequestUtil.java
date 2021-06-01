@@ -4,6 +4,8 @@ import mfi.photos.auth.AuthService;
 import mfi.photos.auth.UserAuthentication;
 import mfi.photos.auth.UserPrincipal;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -31,10 +33,13 @@ public class RequestUtil {
 
     public Optional<UserPrincipal> lookupUserPrincipal(){
 
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal instanceof UserPrincipal) {
-            return Optional.of(((UserPrincipal)principal));
+        if(SecurityContextHolder.getContext().getAuthentication()!=null){
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (principal instanceof UserPrincipal) {
+                return Optional.of(((UserPrincipal)principal));
+            }
         }
+
         return Optional.empty();
     }
 

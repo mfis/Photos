@@ -29,12 +29,6 @@ public class Processor {
 	@Autowired
 	private Environment env;
 
-	public Processor() {
-		if (KeyAccess.getInstance().getUptime() == null) {
-			KeyAccess.getInstance().setUptime(String.valueOf(System.currentTimeMillis()));
-		}
-	}
-
 	public File lookupAssetFile(String path) {
 
 		String base = lookupPhotosDir();

@@ -12,16 +12,13 @@ public class KeyAccess {
 
 	private static final Object monitor = new Object();
 
-	private String uptime = null;
+	private String uptime;
 
-	private byte[] key = null;
-
-	static {
-		instance = new KeyAccess();
-	}
+	private byte[] key;
 
 	private KeyAccess() {
-		// noop
+		key = null;
+		uptime = String.valueOf(System.currentTimeMillis());
 	}
 
 	public static KeyAccess getInstance() {
@@ -35,15 +32,15 @@ public class KeyAccess {
 		return instance;
 	}
 
+	public void reset() {
+		instance = new KeyAccess();
+	}
+
 	public boolean isKeySet() {
-		// System.out.println("isKeySet " + this.key);
 		return this.key != null && this.key.length > 0;
 	}
 
 	public String getKey() {
-		if (getUptime() == null) {
-			throw new IllegalArgumentException("uptime not set");
-		}
 		if (key == null) {
 			return null;
 		}
@@ -55,9 +52,6 @@ public class KeyAccess {
 	}
 
 	public void setKey(String key) {
-		if (getUptime() == null) {
-			throw new IllegalArgumentException("uptime not set");
-		}
 		ByteArrayInputStream in = new ByteArrayInputStream(key.getBytes(StandardCharsets.UTF_8));
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		AES.encrypt(0, getUptime().toCharArray(), in, out);

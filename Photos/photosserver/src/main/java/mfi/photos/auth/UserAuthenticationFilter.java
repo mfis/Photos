@@ -71,7 +71,7 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 			}
 		}
 
-		if (false && !KeyAccess.getInstance().isKeySet() && requestUtil.lookupUserPrincipal().isPresent()) {
+		if (!KeyAccess.getInstance().isKeySet() && requestUtil.lookupUserPrincipal().isPresent()) {
 			Optional<String> secureKey = authService.requestSecureKey(requestUtil.lookupUserPrincipal().get().getToken(), lookupUserAgent(req));
 			if(secureKey.isPresent()){
 				KeyAccess.getInstance().setKey(secureKey.get());
