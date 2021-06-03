@@ -51,7 +51,7 @@ public class RequestUtil {
 
     public static List<String> antRequestPathsWithoutAuthentication(){
         var dirs = List.of("/staticresources/*.", "/photoswipe/*.", "/photoswipe/*/*.");
-        var suffixes = List.of("js", "css", "png", "ico");
+        var suffixes = List.of("js", "css", "png", "ico", "svg");
         var antPaths = new LinkedList<String>();
         dirs.forEach(dir -> suffixes.forEach(suffix -> antPaths.add(dir + suffix)));
         return antPaths;
