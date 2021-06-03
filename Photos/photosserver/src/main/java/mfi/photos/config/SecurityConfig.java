@@ -3,6 +3,7 @@ package mfi.photos.config;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.apachecommons.CommonsLog;
 import mfi.photos.auth.UserAuthenticationFilter;
+import mfi.photos.util.RequestUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -31,16 +32,14 @@ public class SecurityConfig {
 			http.
 				csrf().disable().
 				authorizeRequests().anyRequest().authenticated().
-				and().addFilterBefore(userAuthenticationFilter, ConcurrentSessionFilter.class).
-				formLogin().loginPage("/login").permitAll()
+				and().addFilterBefore(userAuthenticationFilter, ConcurrentSessionFilter.class)
 			;
 		}
 
 		@Override
 		public void configure(WebSecurity web) {
-			final String RES = "/staticresources/*.";
-			web.ignoring().antMatchers(RES + "js", RES + "css", RES + "png", RES + "ico");
-			web.ignoring().mvcMatchers("/login");
+			web.ignoring().antMatchers(RequestUtil.antRequestPathsWithoutAuthentication().toArray(new String[0]));
+			web.ignoring().mvcMatchers(RequestUtil.loginRequestPath());
 		}
 
 		@Bean
@@ -48,4 +47,6 @@ public class SecurityConfig {
 			return super.authenticationManagerBean();
 		}
 	}
+
+
 }

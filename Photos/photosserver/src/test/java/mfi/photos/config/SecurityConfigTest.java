@@ -15,12 +15,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import javax.servlet.http.Cookie;
 import java.util.Optional;
 
+import static mfi.photos.util.RequestUtil.COOKIE_NAME;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 
 
 @SpringBootTest
@@ -42,9 +45,11 @@ class SecurityConfigTest {
     public void beforeEach(){
         KeyAccess.getInstance().reset();
         given(authService.checkUserWithPassword("u", "p", THE_USER_AGENT)).
-                willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u", "t"), THE_TOKEN)));
+                willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u", THE_TOKEN), THE_TOKEN)));
+        given(authService.checkUserWithToken(THE_TOKEN, THE_USER_AGENT, false)).
+                willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u", null), null)));
         given(authService.checkUserWithToken(THE_TOKEN, THE_USER_AGENT, true)).
-                willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u", "t"), THE_NEW_TOKEN)));
+                willReturn(Optional.of(new UserAuthentication(new UserPrincipal("u", THE_TOKEN), THE_NEW_TOKEN)));
         given(authService.requestSecureKey(anyString(), anyString())).willReturn(Optional.of(THE_KEY));
     }
 
@@ -91,22 +96,38 @@ class SecurityConfigTest {
     void testRootAuthFailedNoLoginData() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/"))
                 .andExpect(MockMvcResultMatchers.status().isFound())
-                .andExpect(MockMvcResultMatchers.redirectedUrlPattern("*://*/login"));
+                .andExpect(MockMvcResultMatchers.redirectedUrl("/login"));
     }
 
     @Test
-    void testPhotoAuthFailedWrongLoginData() throws Exception {
+    void testPhotoAuthFailedWrongCredentials() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/assets/album/photo.jpg")
                 .header(RequestUtil.HEADER_USER_AGENT, THE_USER_AGENT)
                 .param("login_user", "x").param("login_pass", "y").param("cookieok", "true"))
-                .andExpect(MockMvcResultMatchers.status().isFound())
-                .andExpect(MockMvcResultMatchers.redirectedUrl("/login?reason=credentials"));
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
     }
 
     @Test
     void testPhotoAuthFailedNoLoginData() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.get("/assets/album/photo.jpg"))
-                .andExpect(MockMvcResultMatchers.status().isFound())
-                .andExpect(MockMvcResultMatchers.redirectedUrlPattern("*://*/login"));
+                .andExpect(MockMvcResultMatchers.status().isForbidden());
+    }
+
+    @Test
+    void testRootAuthWithCredentials() throws Exception {
+        // Login with credentials, creates cookie
+        mockMvc.perform(MockMvcRequestBuilders.post("/")
+                .header(RequestUtil.HEADER_USER_AGENT, THE_USER_AGENT)
+                .param("login_user", "u").param("login_pass", "p").param("cookieok", "true"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(cookie().exists(RequestUtil.COOKIE_NAME));
+        assertThat(KeyAccess.getInstance().getKey(), is(THE_KEY));
+        // Request for photo, provides cookie for auth
+        Cookie loginCookie = new Cookie(COOKIE_NAME, THE_TOKEN);
+        loginCookie.setMaxAge(60 * 60 * 24 * 92);
+        mockMvc.perform(MockMvcRequestBuilders.get("/assets/album/photo.jpg")
+                .cookie(loginCookie)
+                .header(RequestUtil.HEADER_USER_AGENT, THE_USER_AGENT))
+                .andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 }

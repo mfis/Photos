@@ -9,6 +9,8 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -41,6 +43,18 @@ public class RequestUtil {
         }
 
         return Optional.empty();
+    }
+
+    public static String loginRequestPath(){
+        return "/login";
+    }
+
+    public static List<String> antRequestPathsWithoutAuthentication(){
+        var dirs = List.of("/staticresources/*.", "/photoswipe/*.", "/photoswipe/*/*.");
+        var suffixes = List.of("js", "css", "png", "ico");
+        var antPaths = new LinkedList<String>();
+        dirs.forEach(dir -> suffixes.forEach(suffix -> antPaths.add(dir + suffix)));
+        return antPaths;
     }
 
 }
