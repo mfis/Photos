@@ -41,7 +41,7 @@ public class AuthService {
 
         String user = userService.userNameFromLoginCookie(token);
         TokenResult tokenResult = userService.checkToken(user, token,
-                userAgent, DeviceType.BROWSER, !isInitialRequest);
+                userAgent, DeviceType.BROWSER, isInitialRequest);
 
         if (tokenResult.isCheckOk()) {
             if(tokenResult.getNewToken()==null){

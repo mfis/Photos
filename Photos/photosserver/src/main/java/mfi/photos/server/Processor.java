@@ -18,6 +18,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.*;
+import java.net.URL;
 import java.util.*;
 
 @Component
@@ -133,9 +134,8 @@ public class Processor {
 			String json = FileUtils.readFileToString(file, "UTF-8");
 			GalleryView galleryView = gson.fromJson(json, GalleryView.class);
 			galleryView.truncateHashes();
-			galleryView.setBaseURL(StringUtils.replace(galleryView.getBaseURL(),
-					env.getProperty("assets.path.migration.from"),
-					env.getProperty("assets.path.migration.to")));
+			URL baseUrl = new URL(galleryView.getBaseURL());
+			galleryView.setBaseURL(StringUtils.removeStart(baseUrl.getPath(), StringUtils.substringBefore(baseUrl.getPath(), "/assets/")));
 			DisplayNameUtil.createDisplayName(galleryView);
 			json = gson.toJson(galleryView);
 			if (galleryView.getUsersAsList().contains(user)) {

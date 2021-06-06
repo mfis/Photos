@@ -9,7 +9,6 @@ import mfi.photos.util.RequestUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.GenericFilterBean;
@@ -46,7 +45,7 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
 			throws IOException, ServletException {
 
-		log.info("doFilter " + ((HttpServletRequest)req).getRequestURI());
+		log.info("doFilter " + ((HttpServletRequest)req).getRequestURI() + " :: " + requestUtil.lookupUserPrincipal().isPresent());
 
 		if(doLogin(req, resp).sentRedirectToLogin) {
 			return;
@@ -61,6 +60,7 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 
 		if (!KeyAccess.getInstance().isKeySet() && requestUtil.lookupUserPrincipal().isPresent()) {
 			Optional<String> secureKey = authService.requestSecureKey(requestUtil.lookupUserPrincipal().get().getToken(), lookupUserAgent(req));
+			log.info("requestSecureKey:" + secureKey.isPresent());
 			if(secureKey.isPresent()){
 				KeyAccess.getInstance().setKey(secureKey.get());
 			}
@@ -72,7 +72,7 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 		var uri = ((HttpServletRequest)req).getRequestURI();
 		var loginReturn = new LoginReturn();
 
-		if(uri.equals(RequestUtil.loginRequestPath()) || isUriStaticResource(uri)) {
+		if(uri.equals(RequestUtil.loginRequestPath()) || isUriStaticResource(uri) || requestUtil.lookupUserPrincipal().isPresent()) {
 			// no auth required
 
 		} else if(isLoginWithUserCredentials(req)){
@@ -150,10 +150,9 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 	}
 
 	private Optional<UserAuthentication> tryToLoginWithToken(ServletRequest req) {
-		boolean isInitialRequest = ((HttpServletRequest)req).getRequestURI().equals("/");
-		String cookieRead = cookieRead(req);
-		String userAgent = lookupUserAgent(req);
-		return authService.checkUserWithToken(cookieRead(req), lookupUserAgent(req), isInitialRequest);
+		boolean isRoot = ((HttpServletRequest)req).getRequestURI().equals("/");
+		boolean isList = req.getParameterMap().isEmpty() || req.getParameterMap().containsKey("list");
+		return authService.checkUserWithToken(cookieRead(req), lookupUserAgent(req), isRoot && isList);
 	}
 
 	private String cookieRead(ServletRequest request) {
@@ -185,8 +184,8 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 
 		log.info("cookieWrite:" + value);
 		Cookie cookie = new Cookie(COOKIE_NAME, value);
-		cookie.setPath("/");
-		// cookie.setHttpOnly(true);
+		// cookie.setPath("/");
+		cookie.setHttpOnly(true);
 		cookie.setMaxAge(60 * 60 * 24 * 92);
 		cookie.setSecure(Boolean.parseBoolean(cookieSecure));
 		((HttpServletResponse)response).addCookie(cookie);
