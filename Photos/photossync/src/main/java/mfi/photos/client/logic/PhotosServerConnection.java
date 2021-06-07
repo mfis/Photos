@@ -201,7 +201,7 @@ public class PhotosServerConnection {
 
 		System.out.println("cleanUp");
 
-		GalleryList galleryList = new GalleryList(null, syncModel.getAlbums().size(), 0, null);
+		GalleryList galleryList = new GalleryList(null, syncModel.getAlbums().size(), 0L, null);
 		for (Album album : syncModel.getAlbums()) {
 			galleryList.addItem(album.getKey(), album.getName(), null, null, null, null);
 		}

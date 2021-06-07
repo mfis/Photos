@@ -57,7 +57,7 @@ public class ClientSyncController {
 			out.print(processor.checksumFromImage(params));
 		} else if (params.containsKey("readlist")) {
 			// -> GalleryList
-			out.print(processor.listJson(null, 0, true));
+			out.print(processor.listJson(null, 0L, true));
 		} else if (params.containsKey("readalbum")) {
 			// -> GalleryView
 			out.println(processor.galleryJson(params.get("album_key")));

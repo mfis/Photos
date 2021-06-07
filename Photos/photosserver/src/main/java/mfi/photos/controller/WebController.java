@@ -12,13 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
 @Controller
 @CommonsLog
@@ -28,9 +24,6 @@ public class WebController {
 
 	@Autowired
 	private Processor processor;
-
-    @Autowired
-    private RequestUtil servletUtil;
 
 	@Autowired
 	private RequestUtil requestUtil;
@@ -56,7 +49,7 @@ public class WebController {
 	}
 
 	@GetMapping("/logout")
-	public @ResponseBody void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody void logout(HttpServletResponse response) throws IOException {
 
 		log.debug("/logout");
 		// TODO: servletUtil.cookieDelete(request, response);
@@ -67,17 +60,14 @@ public class WebController {
 	}
 
 	@RequestMapping("/")
-	public @ResponseBody void response(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public @ResponseBody void response(HttpServletResponse response,
+									   @RequestParam(name = "y", required = false) Long yPos,
+									   @RequestParam(name = "s", required = false) String searchString,
+									   @RequestParam(name = "gallery", required = false) String galleryName
+									   ) throws IOException {
 
 		log.debug("/");
 		requestUtil.assertLoggedInUser();
-
-		Map<String, String> params = new HashMap<>();
-		Enumeration<String> parameterNames = request.getParameterNames();
-		while (parameterNames.hasMoreElements()) {
-			String key = parameterNames.nextElement();
-			params.put(key, request.getParameter(key));
-		}
 
 		StringBuilder sb = new StringBuilder();
 
@@ -88,20 +78,11 @@ public class WebController {
 		PrintWriter out = response.getWriter();
 
 		// TODO: write separate methods for each request
-		// TODO: if !KeyAccess.getInstance().isKeySet() -> login required!
-		// if (!KeyAccess.getInstance().isKeySet()) {
-		//	method.addParameter("getSecretForUser", properties.getProperty("technicalUser"));
-		//}
-		//if (ok && !KeyAccess.getInstance().isKeySet()) {
-		//	KeyAccess.getInstance().setKey(method.getResponseBodyAsString());
-		//}
 
-		if (params.containsKey("gallery") ) {
-			processor.galleryHTML(params, sb);
-		} else if (params.containsKey("list")) {
-			processor.listHTML(params, sb);
+		if (galleryName!=null) {
+			processor.galleryHTML(yPos, searchString, galleryName, sb);
 		} else {
-			processor.listHTML(params, sb);
+			processor.listHTML(yPos, searchString, sb);
 		}
 
 		response.setStatus(200);

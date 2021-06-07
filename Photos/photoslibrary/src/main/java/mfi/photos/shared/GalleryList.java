@@ -4,11 +4,11 @@ package mfi.photos.shared;
 public class GalleryList {
 
 	private String user;
-	private int posY;
+	private Long posY;
 	private String search;
 	private Item list[];
 
-	public GalleryList(String user, int size, int posY, String search) {
+	public GalleryList(String user, int size, Long posY, String search) {
 		this.list = new Item[size];
 		this.user = user;
 		this.posY = posY;

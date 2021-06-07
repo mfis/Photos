@@ -118,7 +118,7 @@ public class Processor {
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 	}
 
-	public void galleryHTML(Map<String, String> params, StringBuilder sb)
+	public void galleryHTML(Long yPos, String searchString, String galleryName, StringBuilder sb)
 			throws IOException {
 
 		String user = requestUtil.lookupUserPrincipal().get().getName();
@@ -128,7 +128,7 @@ public class Processor {
 
 		Gson gson = new GsonBuilder().create();
 		String jsonDir = lookupJsonDir();
-		String key = StringEscapeUtils.escapeHtml4(params.get("gallery"));
+		String key = StringEscapeUtils.escapeHtml4(galleryName);
 		File file = new File(jsonDir + key + ".json");
 		if (file.exists() && file.isFile() && file.canRead()) {
 			String json = FileUtils.readFileToString(file, "UTF-8");
@@ -140,15 +140,15 @@ public class Processor {
 			json = gson.toJson(galleryView);
 			if (galleryView.getUsersAsList().contains(user)) {
 				html = StringUtils.replace(html, "<!-- HEAD -->", htmlHead);
-				html = StringUtils.replace(html, "/*LISTYPOS*/", params.get("y"));
-				html = StringUtils.replace(html, "/*LISTSEARCH*/", params.get("s"));
+				html = StringUtils.replace(html, "/*LISTYPOS*/", Long.toString(yPos));
+				html = StringUtils.replace(html, "/*LISTSEARCH*/", searchString);
 				html = StringUtils.replace(html, "/*JSONFILE*/", json);
 				sb.append(html);
 			} else {
-				listHTML(params, sb);
+				listHTML(yPos, searchString, sb);
 			}
 		} else {
-			listHTML(params, sb);
+			listHTML(yPos, searchString, sb);
 		}
 	}
 
@@ -238,18 +238,9 @@ public class Processor {
 		return html;
 	}
 
-	public void listHTML(Map<String, String> params, StringBuilder sb) throws IOException {
+	public void listHTML(Long yPos, String searchString, StringBuilder sb) throws IOException {
 
-		String user = requestUtil.lookupUserPrincipal().get().getName();
-
-		String y = params.get("y");
-		String s = StringUtils.trimToEmpty(params.get("s"));
-		int yPos = 0;
-		if (StringUtils.isNotBlank(y) && StringUtils.isNumeric(y)) {
-			yPos = Integer.parseInt(y);
-		}
-
-		String json = listJson(s, yPos, false);
+		String json = listJson(searchString, yPos, false);
 
 		String html = IOUtil.readContentFromFileInClasspath("list.html");
 		String htmlHead = IOUtil.readContentFromFileInClasspath("htmlhead");
@@ -258,7 +249,7 @@ public class Processor {
 		sb.append(html);
 	}
 
-	public String listJson(String s, int yPos, boolean withHashesAndUsers) {
+	public String listJson(String s, Long yPos, boolean withHashesAndUsers) {
 
 		String user = requestUtil.lookupUserPrincipal().get().getName();
 		Gson gson = new GsonBuilder().create();
@@ -279,7 +270,7 @@ public class Processor {
 		Collections.sort(galleryViews, new GalleryViewComparator());
 		Collections.reverse(galleryViews);
 
-		GalleryList galleryList = new GalleryList(user, galleryViews.size(), yPos, s);
+		GalleryList galleryList = new GalleryList(user, galleryViews.size(), yPos, StringUtils.trimToEmpty(s));
 		for (GalleryView view : galleryViews) {
 			galleryList.addItem(view.getKey(), view.getGalleryDisplayName(),
 					view.getGalleryDisplayIdentifier(), view.getGalleryDisplayNormDate(),
