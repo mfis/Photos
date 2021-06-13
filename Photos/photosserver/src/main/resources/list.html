@@ -10,7 +10,7 @@
 		<div class="headertablediv">
 			<table class="headertable">
 				<tr>
-					<td class="headertd1" id="logoff"><div class="figureicon20 svglogout"></div></td>
+					<td class="headertd1" id="logout"><div class="figureicon20 svglogout"></div></td>
 					<td class="headertd2"><div class="truncate-ellipsis"><span id="overview"></span></div></td>
 				</tr>
 			</table>
@@ -31,8 +31,8 @@
 		var obj = JSON.parse(items);
 		
 		document.getElementById("overview").innerHTML = "Fotos von " + obj.user;
-		document.getElementById("logoff").onclick = function(z) {
-			window.location.href = "?logoff";
+		document.getElementById("logout").onclick = function(z) {
+			window.location.href = "/logout";
 		}
 		
 		document.getElementById("idSearch").value = obj.search; 

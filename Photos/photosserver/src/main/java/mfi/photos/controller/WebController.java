@@ -31,13 +31,13 @@ public class WebController {
 	@Autowired
 	private Environment env;
 
-	@RequestMapping("/login")
+	@RequestMapping(RequestUtil.PATH_LOGIN)
 	public @ResponseBody void login(HttpServletResponse response, @RequestParam(name = "reason", required = false) String reason) throws IOException {
 
-		log.debug("/login reason=" + reason);
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
 		response.addHeader("Cache-Control", "no-cache");
+		requestUtil.setEssentialHeader(response);
 		response.getWriter().print(processor.loginscreenHTML(loginReasonText(reason)));
 	}
 
@@ -48,14 +48,14 @@ public class WebController {
 		return env.getProperty("login.failure.reason." + key);
 	}
 
-	@GetMapping("/logout")
+	@GetMapping(RequestUtil.PATH_LOGOUT)
 	public @ResponseBody void logout(HttpServletResponse response) throws IOException {
 
-		log.debug("/logout");
-		// TODO: servletUtil.cookieDelete(request, response);
+		log.info(RequestUtil.PATH_LOGOUT);
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
 		response.addHeader("Cache-Control", "no-cache");
+		requestUtil.setEssentialHeader(response);
 		response.getWriter().print(processor.loginscreenHTML("Sie wurden abgemeldet."));
 	}
 
@@ -66,18 +66,14 @@ public class WebController {
 									   @RequestParam(name = "gallery", required = false) String galleryName
 									   ) throws IOException {
 
-		log.debug("/");
 		requestUtil.assertLoggedInUser();
-
-		StringBuilder sb = new StringBuilder();
 
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
 		response.addHeader("Cache-Control", "no-cache");
+		requestUtil.setEssentialHeader(response);
 
-		PrintWriter out = response.getWriter();
-
-		// TODO: write separate methods for each request
+		StringBuilder sb = new StringBuilder();
 
 		if (galleryName!=null) {
 			processor.galleryHTML(yPos, searchString, galleryName, sb);
@@ -87,6 +83,7 @@ public class WebController {
 
 		response.setStatus(200);
 
+		PrintWriter out = response.getWriter();
 		out.write(sb.toString());
 		out.flush();
 		out.close();

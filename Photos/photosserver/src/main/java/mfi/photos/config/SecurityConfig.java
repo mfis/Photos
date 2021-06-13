@@ -40,6 +40,7 @@ public class SecurityConfig {
 		public void configure(WebSecurity web) {
 			web.ignoring().antMatchers(RequestUtil.antRequestPathsWithoutAuthentication().toArray(new String[0]));
 			web.ignoring().mvcMatchers(RequestUtil.loginRequestPath());
+			web.ignoring().mvcMatchers(RequestUtil.logoutRequestPath());
 		}
 
 		@Bean

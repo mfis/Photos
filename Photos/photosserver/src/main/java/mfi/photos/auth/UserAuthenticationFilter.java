@@ -39,13 +39,15 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 	@Value("${server.servlet.session.cookie.secure}")
 	private String cookieSecure;
 
-	private AntPathMatcher antPathMatcher = new AntPathMatcher();
+	private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
 	@Override
 	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
 			throws IOException, ServletException {
 
-		log.info("doFilter " + ((HttpServletRequest)req).getRequestURI() + " :: " + requestUtil.lookupUserPrincipal().isPresent());
+		if(log.isDebugEnabled()){
+			log.debug("doFilter " + ((HttpServletRequest)req).getRequestURI() + " :: " + requestUtil.lookupUserPrincipal().isPresent());
+		}
 
 		if(doLogin(req, resp).sentRedirectToLogin) {
 			return;
@@ -60,10 +62,7 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 
 		if (!KeyAccess.getInstance().isKeySet() && requestUtil.lookupUserPrincipal().isPresent()) {
 			Optional<String> secureKey = authService.requestSecureKey(requestUtil.lookupUserPrincipal().get().getToken(), lookupUserAgent(req));
-			log.info("requestSecureKey:" + secureKey.isPresent());
-			if(secureKey.isPresent()){
-				KeyAccess.getInstance().setKey(secureKey.get());
-			}
+			secureKey.ifPresent(s -> KeyAccess.getInstance().setKey(s));
 		}
 	}
 
@@ -72,9 +71,12 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 		var uri = ((HttpServletRequest)req).getRequestURI();
 		var loginReturn = new LoginReturn();
 
+		//noinspection StatementWithEmptyBody
 		if(uri.equals(RequestUtil.loginRequestPath()) || isUriStaticResource(uri) || requestUtil.lookupUserPrincipal().isPresent()) {
-			// no auth required
-
+			//no auth required
+		} else if (uri.equals(RequestUtil.logoutRequestPath())){
+			cookieDelete(resp);
+			authService.logout(cookieRead(req), lookupUserAgent(req));
 		} else if(isLoginWithUserCredentials(req)){
 			if(hasUserAcceptedCookies(req)){
 				Optional<UserAuthentication> optionalUserAuthentication = tryToLoginWithUserCredentials(req);
@@ -123,10 +125,8 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 		if(((HttpServletRequest)req).getRequestURI().contains(".")){
 			// assume requesting a file (css, js, jpg) - no redirect, just a 403
 			((HttpServletResponse)resp).setStatus(403);
-			log.info("403");
 		}else{
 			// assume requesting a site (list, gallery) - redirecting to login site
-			log.info("redirect:" + reasonKey);
 			String reasonParam = reasonKey!=null?"?reason=" + reasonKey:StringUtils.EMPTY;
 			((HttpServletResponse)resp).sendRedirect(RequestUtil.loginRequestPath() + reasonParam);
 		}
@@ -172,26 +172,25 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 		return null;
 	}
 
-	private void cookieDelete(HttpServletResponse response) {
+	private void cookieDelete(ServletResponse response) {
 
 		Cookie cookie = new Cookie(COOKIE_NAME, StringUtils.EMPTY);
 		cookie.setHttpOnly(true);
 		cookie.setMaxAge(0);
-		response.addCookie(cookie);
+		((HttpServletResponse)response).addCookie(cookie);
 	}
 
 	private void cookieWrite(ServletResponse response, String value) {
 
 		log.info("cookieWrite:" + value);
 		Cookie cookie = new Cookie(COOKIE_NAME, value);
-		// cookie.setPath("/");
 		cookie.setHttpOnly(true);
 		cookie.setMaxAge(60 * 60 * 24 * 92);
 		cookie.setSecure(Boolean.parseBoolean(cookieSecure));
 		((HttpServletResponse)response).addCookie(cookie);
 	}
 
-	private class LoginReturn{
+	private static class LoginReturn{
 		@Getter @Setter
 		boolean sentRedirectToLogin;
 	}

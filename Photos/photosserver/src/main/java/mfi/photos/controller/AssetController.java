@@ -22,9 +22,6 @@ public class AssetController {
 	@Autowired
 	private Processor processor;
 
-	@Autowired
-	private AuthService authService;
-
     @Autowired
 	private RequestUtil requestUtil;
 

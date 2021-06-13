@@ -54,6 +54,14 @@ public class AuthService {
         }
     }
 
+    public void logout(String token, String userAgent){
+
+        String user = userService.userNameFromLoginCookie(token);
+        if(!userService.deleteToken(user, userAgent, DeviceType.BROWSER)){
+            log.warn("logout nicht erfolgreich: " + user);
+        }
+    }
+
     public Optional<String> requestSecureKey(String token, String userAgent){
 
         String user = userService.userNameFromLoginCookie(token);
