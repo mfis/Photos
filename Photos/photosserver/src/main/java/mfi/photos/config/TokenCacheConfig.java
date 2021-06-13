@@ -12,7 +12,8 @@ import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Arrays;
+import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 
 @Configuration
@@ -25,13 +26,14 @@ class TokenCacheConfig extends CachingConfigurerSupport {
         ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager() {
 
             @Override
-            protected Cache createConcurrentMapCache(final String name) {
+            @Nonnull
+            protected Cache createConcurrentMapCache(@Nonnull final String name) {
                 return new ConcurrentMapCache(name, CacheBuilder.newBuilder().expireAfterWrite(1500, TimeUnit.MILLISECONDS)
                         .maximumSize(10).build().asMap(), false);
             }
         };
 
-        cacheManager.setCacheNames(Arrays.asList("tokenCache"));
+        cacheManager.setCacheNames(Collections.singletonList("tokenCache"));
         return cacheManager;
     }
 

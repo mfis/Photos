@@ -1,15 +1,13 @@
 package mfi.photos.server;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import mfi.photos.util.GalleryViewCache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 
 @Component
 public class ContextListener {
@@ -17,18 +15,11 @@ public class ContextListener {
 	@Autowired
 	private Processor processor;
 
-	private static Logger logger = LoggerFactory.getLogger(ContextListener.class);
-
 	@PostConstruct
 	public void contextInitialized() {
-		logger.info("Context initializing...");
-		GalleryViewCache.getInstance().refresh(processor.lookupJsonDir(), new GsonBuilder().create());
-		logger.info("Context initialized.");
+		Assert.isTrue(StringUtils.endsWith(processor.lookupPhotosDir(), "/"), "photosDir has to end with '/'");
+		Assert.isTrue(StringUtils.endsWith(processor.lookupListDir(), "/"), "jsonDir has to end with '/'");
+		Assert.isTrue(StringUtils.isNotBlank(processor.lookupLinkToLawSite()), "lawlink has to be configured");
+		GalleryViewCache.getInstance().refresh(processor.lookupListDir(), new GsonBuilder().create());
 	}
-
-	@PreDestroy
-	public void contextDestroyed() {
-		logger.info("Context destroyed.");
-	}
-
 }

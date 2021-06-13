@@ -103,7 +103,7 @@ public class FileDownloadUtil {
 
 		// Prepare some variables. The full Range represents the complete file.
 		Range full = new Range(0, length - 1, length);
-		List<Range> ranges = new ArrayList<Range>();
+		List<Range> ranges = new ArrayList<>();
 
 		// Validate and process Range and If-Range headers.
 		String range = request.getHeader("Range");
@@ -232,7 +232,6 @@ public class FileDownloadUtil {
 			if (ranges.isEmpty() || ranges.get(0) == full) {
 
 				// Return full file.
-				Range r = full;
 				response.setContentType(contentType);
 
 				if (content) {
@@ -245,11 +244,11 @@ public class FileDownloadUtil {
 						// GZIP.
 						// So only add it if there is no means of GZIP, else
 						// browser will hang.
-						response.setHeader("Content-Length", String.valueOf(r.length));
+						response.setHeader("Content-Length", String.valueOf(full.length));
 					}
 
 					// Copy full range.
-					copy(file, output, r.start, r.length, isEncrypted);
+					copy(file, output, full.start, full.length, isEncrypted);
 				}
 
 			} else if (ranges.size() == 1) {
@@ -311,7 +310,7 @@ public class FileDownloadUtil {
 	 * @return True if the given accept header accepts the given value.
 	 */
 	private boolean accepts(String acceptHeader, String toAccept) {
-		String[] acceptValues = acceptHeader.split("\\s*(,|;)\\s*");
+		String[] acceptValues = acceptHeader.split("\\s*([,;])\\s*");
 		Arrays.sort(acceptValues);
 		return Arrays.binarySearch(acceptValues, toAccept) > -1
 				|| Arrays.binarySearch(acceptValues, toAccept.replaceAll("/.*$", "/*")) > -1
@@ -355,7 +354,7 @@ public class FileDownloadUtil {
 	/**
 	 * Copy the given byte range of the given input to the given output.
 	 * 
-	 * @param input
+	 * @param file
 	 *            The input to copy the given range to the given output for.
 	 * @param output
 	 *            The output to copy the given range from the given input for.
@@ -368,10 +367,6 @@ public class FileDownloadUtil {
 	 */
 	private void copy(File file, OutputStream output, long start, long length, boolean isEncrypted)
 			throws IOException {
-
-		// System.out.print("range:" + (start / 1024 / 1024) + "M/" + (length /
-		// 1024 / 1024) + "M->");
-		// long written = 0;
 
 		RandomAccessFile inputFile = null;
 		InputStream inputStream = null;

@@ -1,6 +1,5 @@
 package mfi.photos.controller;
 
-import mfi.photos.auth.AuthService;
 import mfi.photos.server.FileDownloadUtil;
 import mfi.photos.server.Processor;
 import mfi.photos.util.RequestUtil;

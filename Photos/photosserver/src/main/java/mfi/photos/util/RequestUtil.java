@@ -1,11 +1,7 @@
 package mfi.photos.util;
 
-import mfi.photos.auth.AuthService;
 import mfi.photos.auth.UserAuthentication;
 import mfi.photos.auth.UserPrincipal;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -17,9 +13,6 @@ import java.util.Optional;
 @Component
 public class RequestUtil {
 
-    @Autowired
-    private AuthService authService;
-
     public static final String PATH_LOGIN = "/login";
 
     public static final String PATH_LOGOUT = "/logout";
@@ -30,6 +23,15 @@ public class RequestUtil {
 
     public void assertLoggedInUser(){
         if(lookupUserPrincipal().isEmpty()){
+            throw new IllegalCallerException("No known user logged in");
+        }
+    }
+
+    public String assertUserAndGetName(){
+        Optional<UserPrincipal> principal = lookupUserPrincipal();
+        if(principal.isPresent()){
+            return principal.get().getName();
+        }else{
             throw new IllegalCallerException("No known user logged in");
         }
     }
@@ -46,7 +48,6 @@ public class RequestUtil {
                 return Optional.of(((UserPrincipal)principal));
             }
         }
-
         return Optional.empty();
     }
 
@@ -66,8 +67,7 @@ public class RequestUtil {
         return antPaths;
     }
 
-    @SuppressWarnings("UastIncorrectHttpHeaderInspection")
-    public static void setEssentialHeader(HttpServletResponse response) {
+    public void setEssentialHeader(HttpServletResponse response) {
         response.setHeader("Referrer-Policy", "no-referrer");
         response.setHeader("content-security-policy", "frame-ancestors 'none';");
         response.setHeader("X-Frame-Options", "deny");
