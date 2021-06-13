@@ -30,12 +30,14 @@ public class AssetController {
 	@RequestMapping(value = { "/assets/**" }, method = { RequestMethod.HEAD })
 	public @ResponseBody void responseHead(HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
+		response.addHeader("Cache-Control", "no-cache");
 		responseInternal(request, response, false);
 	}
 
 	@GetMapping(value = { "/assets/**" })
 	public @ResponseBody void responseGetPost(HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
+		response.addHeader("Cache-Control", "private, max-age=600");
 		responseInternal(request, response, true);
 	}
 

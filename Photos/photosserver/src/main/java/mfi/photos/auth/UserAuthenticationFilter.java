@@ -159,16 +159,13 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 
 		Cookie[] cookies = ((HttpServletRequest)request).getCookies();
 		if (cookies == null) {
-			log.info("cookieRead:" + null);
 			return null;
 		}
 		for (Cookie cookie : cookies) {
 			if (cookie.getName().equals(COOKIE_NAME)) {
-				log.info("cookieRead:" + StringUtils.trimToNull(cookie.getValue()));
 				return StringUtils.trimToNull(cookie.getValue());
 			}
 		}
-		log.info("cookieRead:" + null);
 		return null;
 	}
 
@@ -182,7 +179,6 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 
 	private void cookieWrite(ServletResponse response, String value) {
 
-		log.info("cookieWrite:" + value);
 		Cookie cookie = new Cookie(COOKIE_NAME, value);
 		cookie.setHttpOnly(true);
 		cookie.setMaxAge(60 * 60 * 24 * 92);
