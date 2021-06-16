@@ -220,6 +220,7 @@ public class PhotosServerConnection {
 		Map<String, String> parameters = new HashMap<String, String>();
 		parameters.put("login_user", credentialUser);
 		parameters.put("login_pass", credentialPass);
+		parameters.put("cookieok", "true");
 		parameters.put("testConnection", "");
 		try {
 			sendPost(parameters, Timeout.SHORT);
@@ -238,6 +239,7 @@ public class PhotosServerConnection {
 		client.getParams().setParameter("http.connection.timeout", timeout.getWait());
 
 		PostMethod method = new PostMethod(url);
+		method.setRequestHeader("user-agent", "photssync");
 
 		for (String key : parameters.keySet()) {
 			method.addParameter(key, parameters.get(key));
