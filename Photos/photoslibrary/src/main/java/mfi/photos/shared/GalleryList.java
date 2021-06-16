@@ -1,12 +1,14 @@
 package mfi.photos.shared;
 
-@SuppressWarnings("unused")
+import lombok.Data;
+
+@Data
 public class GalleryList {
 
 	private String user;
 	private Long posY;
 	private String search;
-	private Item list[];
+	private Item[] list;
 
 	public GalleryList(String user, int size, Long posY, String search) {
 		this.list = new Item[size];
@@ -17,12 +19,12 @@ public class GalleryList {
 
 	public void addItem(String key, String name, String identifier, String normDate, String hash, String[] users) {
 		Item newItem = new Item();
-		newItem.key = key;
-		newItem.name = name;
-		newItem.identifier = identifier;
-		newItem.normDate = normDate;
-		newItem.hash = hash;
-		newItem.users = users;
+		newItem.setKey(key);
+		newItem.setName(name);
+		newItem.setIdentifier(identifier);
+		newItem.setNormDate(normDate);
+		newItem.setHash(hash);
+		newItem.setUsers(users);
 		for (int i = 0; i < this.list.length; i++) {
 			if (this.list[i] == null) {
 				this.list[i] = newItem;
@@ -33,27 +35,6 @@ public class GalleryList {
 
 	public Item[] getList() {
 		return list;
-	}
-
-	public class Item {
-		private String key;
-		private String name;
-		private String identifier;
-		private String normDate;
-		private String hash;
-		private String[] users;
-
-		public String getKey() {
-			return key;
-		}
-
-		public String getHash() {
-			return hash;
-		}
-
-		public String[] getUsers() {
-			return users;
-		}
 	}
 
 }

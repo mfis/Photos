@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import mfi.photos.shared.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -26,10 +27,6 @@ import mfi.photos.client.model.Album;
 import mfi.photos.client.model.Dimension;
 import mfi.photos.client.model.Photo;
 import mfi.photos.client.model.SyncModel;
-import mfi.photos.shared.AES;
-import mfi.photos.shared.ChunkData;
-import mfi.photos.shared.GalleryList;
-import mfi.photos.shared.GalleryView;
 
 public class PhotosServerConnection {
 
@@ -137,7 +134,7 @@ public class PhotosServerConnection {
 		GalleryList galleryList = gson.fromJson(respronse, GalleryList.class);
 
 		Map<String, String> keysAndHashes = new HashMap<>();
-		for (GalleryList.Item item : galleryList.getList()) {
+		for (Item item : galleryList.getList()) {
 			keysAndHashes.put(item.getKey(), item.getHash());
 		}
 
@@ -157,7 +154,7 @@ public class PhotosServerConnection {
 		GalleryList galleryList = gson.fromJson(respronse, GalleryList.class);
 
 		Map<String, List<String>> keysAndUsers = new HashMap<>();
-		for (GalleryList.Item item : galleryList.getList()) {
+		for (Item item : galleryList.getList()) {
 			keysAndUsers.put(item.getKey(), Arrays.asList(item.getUsers()));
 		}
 
@@ -170,7 +167,7 @@ public class PhotosServerConnection {
 
 		GalleryView galleryView = readGalleryView(album.getKey());
 
-		for (GalleryView.Picture item : galleryView.getPictures()) {
+		for (Picture item : galleryView.getPictures()) {
 			Photo photo = album.lookupPhotoByRemoteName(item.getName());
 			if (photo != null) {
 				photo.setRemoteHash(item.getHash());

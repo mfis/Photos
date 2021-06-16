@@ -2,8 +2,11 @@ package mfi.photos.controller;
 
 import lombok.extern.apachecommons.CommonsLog;
 import mfi.photos.server.Processor;
+import mfi.photos.shared.GalleryView;
+import mfi.photos.util.GalleryViewCache;
 import mfi.photos.util.RequestUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
@@ -76,7 +79,13 @@ public class WebController {
 		StringBuilder sb = new StringBuilder();
 
 		if (galleryName!=null) {
-			processor.galleryHTML(yPos, searchString, galleryName, sb);
+			GalleryView view = GalleryViewCache.getInstance().read(StringEscapeUtils.escapeHtml4(galleryName));
+			String user = requestUtil.assertUserAndGetName();
+			if (view != null && view.getUsersAsList().contains(user)) {
+				processor.galleryHTML(yPos, searchString, galleryName, sb);
+			}else{
+				processor.listHTML(yPos, searchString, sb);
+			}
 		} else {
 			processor.listHTML(yPos, searchString, sb);
 		}

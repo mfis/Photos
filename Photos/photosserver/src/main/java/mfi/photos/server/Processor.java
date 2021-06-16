@@ -4,8 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import mfi.photos.shared.AES;
 import mfi.photos.shared.GalleryList;
-import mfi.photos.shared.GalleryList.Item;
+import mfi.photos.shared.Item;
 import mfi.photos.shared.GalleryView;
+import mfi.photos.shared.Picture;
 import mfi.photos.util.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -26,6 +27,8 @@ import java.util.*;
 public class Processor {
 
 	public static final String JSON_FILE_SUFFIX = ".json";
+
+	private final Gson gson = new GsonBuilder().create();
 
 	@Autowired
 	private RequestUtil requestUtil;
@@ -49,11 +52,8 @@ public class Processor {
 		return new File(lookupPhotosDir() + StringUtils.removeStart(path, assetsUri.trim()) + AES.FILE_SUFFIX);
 	}
 
-	public void saveNewImage(Map<String, String> params) throws IOException {
+	public void saveNewImage(String galleryName, String imageName, String base64Data, String append) throws IOException {
 
-		String galleryName = params.get("galleryName");
-		String imageName = params.get("imageName");
-		String base64Data = params.get("saveImage");
 		byte[] data = Base64.getDecoder().decode(base64Data);
 		String photosDir = lookupPhotosDir();
 		File dir = new File(photosDir + galleryName);
@@ -61,17 +61,15 @@ public class Processor {
 			FileUtils.forceMkdir(dir);
 		}
 		File photo = new File(photosDir + galleryName + "/" + imageName + AES.FILE_SUFFIX);
-		FileUtils.writeByteArrayToFile(photo, data, Boolean.valueOf(params.get("append")));
+		FileUtils.writeByteArrayToFile(photo, data, Boolean.parseBoolean(append));
 	}
 
 	public String lookupPhotosDir() {
 		return photosDir;
 	}
 
-	public String checksumFromImage(Map<String, String> params) {
+	public String checksumFromImage(String galleryName, String imageName) {
 
-		String galleryName = params.get("galleryName");
-		String imageName = params.get("imageName");
 		String photosDir = lookupPhotosDir();
 		File photo = new File(photosDir + galleryName + "/" + imageName + AES.FILE_SUFFIX);
 		try {
@@ -81,25 +79,19 @@ public class Processor {
 		}
 	}
 
-	public void saveNewGallery(Map<String, String> params) throws IOException {
+	public void saveNewGallery(String base64StringGalleryName) throws IOException {
 
-		Gson gson = new GsonBuilder().create();
 		String jsonDir = lookupListDir();
-		String base64String = params.get("saveGallery");
-		String newJson = new String(Base64.getDecoder().decode(base64String), StandardCharsets.UTF_8);
+		String newJson = new String(Base64.getDecoder().decode(base64StringGalleryName), StandardCharsets.UTF_8);
 		GalleryView galleryView = gson.fromJson(newJson, GalleryView.class);
 		FileUtils.writeStringToFile(new File(jsonDir + galleryView.getKey() + ".json"), newJson);
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 	}
 
-	public void renameGallery(Map<String, String> params) throws IOException {
+	public void renameGallery(String keyOld, String base64StringGalleryName) throws IOException {
 
-		String keyOld = params.get("keyOld");
-
-		Gson gson = new GsonBuilder().create();
 		String jsonDir = lookupListDir();
-		String base64String = params.get("renameGallery");
-		String newJson = new String(Base64.getDecoder().decode(base64String), StandardCharsets.UTF_8);
+		String newJson = new String(Base64.getDecoder().decode(base64StringGalleryName), StandardCharsets.UTF_8);
 		GalleryView galleryView = gson.fromJson(newJson, GalleryView.class);
 
 		// rename directory
@@ -126,35 +118,22 @@ public class Processor {
 	public void galleryHTML(Long yPos, String searchString, String galleryName, StringBuilder sb)
 			throws IOException {
 
-		String user = requestUtil.assertUserAndGetName();
-
 		String html = IOUtil.readContentFromFileInClasspath("gallery.html");
 		String htmlHead = IOUtil.readContentFromFileInClasspath("htmlhead");
 
-		Gson gson = new GsonBuilder().create();
-		String jsonDir = lookupListDir();
-		String key = StringEscapeUtils.escapeHtml4(galleryName);
-		File file = new File(jsonDir + key + ".json");
-		if (file.exists() && file.isFile() && file.canRead()) {
-			String json = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-			GalleryView galleryView = gson.fromJson(json, GalleryView.class);
-			galleryView.truncateHashes();
-			URL baseUrl = new URL(galleryView.getBaseURL());
-			galleryView.setBaseURL(StringUtils.removeStart(baseUrl.getPath(), StringUtils.substringBefore(baseUrl.getPath(), "/assets/")));
-			DisplayNameUtil.createDisplayName(galleryView);
-			json = gson.toJson(galleryView);
-			if (galleryView.getUsersAsList().contains(user)) {
-				html = StringUtils.replace(html, "<!-- HEAD -->", htmlHead);
-				html = StringUtils.replace(html, "/*LISTYPOS*/", Long.toString(yPos));
-				html = StringUtils.replace(html, "/*LISTSEARCH*/", searchString);
-				html = StringUtils.replace(html, "/*JSONFILE*/", json);
-				sb.append(html);
-			} else {
-				listHTML(yPos, searchString, sb);
-			}
-		} else {
-			listHTML(yPos, searchString, sb);
-		}
+		GalleryView galleryView = deepCopyGalleryView(GalleryViewCache.getInstance().read(StringEscapeUtils.escapeHtml4(galleryName)));
+		galleryView.truncateHashes();
+		URL baseUrl = new URL(galleryView.getBaseURL());
+		galleryView.setBaseURL(StringUtils.removeStart(baseUrl.getPath(), StringUtils.substringBefore(baseUrl.getPath(), "/assets/")));
+		DisplayNameUtil.createDisplayName(galleryView);
+		String json = gson.toJson(galleryView);
+
+		html = StringUtils.replace(html, "<!-- HEAD -->", htmlHead);
+		html = StringUtils.replace(html, "/*LISTYPOS*/", Long.toString(yPos));
+		html = StringUtils.replace(html, "/*LISTSEARCH*/", searchString);
+		html = StringUtils.replace(html, "/*JSONFILE*/", json);
+
+		sb.append(html);
 	}
 
 	public String galleryJson(String key) throws IOException {
@@ -176,7 +155,6 @@ public class Processor {
 			throw new IOException("Different cleanUp Hashes: " + jsonHash + " / " + ownHash);
 		}
 
-		Gson gson = new GsonBuilder().create();
 		String jsonDir = lookupListDir();
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 
@@ -206,7 +184,7 @@ public class Processor {
 			GalleryView galleryView = GalleryViewCache.getInstance().read(dir.getName());
 			List<String> pictureNamesInAlbum = new ArrayList<>();
 			if (galleryView != null) {
-				for (GalleryView.Picture picture : galleryView.getPictures()) {
+				for (Picture picture : galleryView.getPictures()) {
 					pictureNamesInAlbum.add(picture.getName() + AES.FILE_SUFFIX);
 				}
 			}
@@ -253,7 +231,6 @@ public class Processor {
 	public String listJson(String s, Long yPos, boolean withHashesAndUsers) {
 
 		String user = requestUtil.assertUserAndGetName();
-		Gson gson = new GsonBuilder().create();
 		String jsonDir = lookupListDir();
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 
@@ -290,4 +267,7 @@ public class Processor {
 		return linkToLawSite;
 	}
 
+	private GalleryView deepCopyGalleryView(GalleryView galleryView){
+		return gson.fromJson(gson.toJson(galleryView), GalleryView.class);
+	}
 }

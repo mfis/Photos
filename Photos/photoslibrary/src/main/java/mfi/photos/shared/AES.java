@@ -54,9 +54,9 @@ public class AES {
 	/**
 	 * @return a new pseudorandom salt of the specified length
 	 */
-	private static byte[] generateSalt(int length) {
+	private static byte[] generateSalt() {
 		Random r = new SecureRandom();
-		byte[] salt = new byte[length];
+		byte[] salt = new byte[AES.SALT_LENGTH];
 		r.nextBytes(salt);
 		return salt;
 	}
@@ -121,7 +121,7 @@ public class AES {
 		byteBuffer.put(sizeString.getBytes(StandardCharsets.UTF_8));
 
 		// generate salt and derive keys for authentication and encryption
-		byte[] salt = generateSalt(SALT_LENGTH);
+		byte[] salt = generateSalt();
 		Keys keys = keygen(AES_KEY_LENGTH, password, salt);
 		Cipher encrypt = null;
 
@@ -181,7 +181,7 @@ public class AES {
 		write(output, sizeString.getBytes(StandardCharsets.UTF_8), "size");
 
 		// generate salt and derive keys for authentication and encryption
-		byte[] salt = generateSalt(SALT_LENGTH);
+		byte[] salt = generateSalt();
 		Keys keys = keygen(AES_KEY_LENGTH, password, salt);
 		Cipher encrypt = null;
 

@@ -1,75 +1,74 @@
 package mfi.photos.controller;
 
-import mfi.photos.auth.AuthService;
 import mfi.photos.server.Processor;
 import mfi.photos.util.RequestUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
 
 @Controller
 public class ClientSyncController {
 
-	private static final String UTF_8 = "UTF-8";
+    private static final String UTF_8 = "UTF-8";
 
-	@Autowired
-	private Processor processor;
+    @Autowired
+    private Processor processor;
 
-	@Autowired
-	private AuthService authService;
+    @Autowired
+    private RequestUtil requestUtil;
 
-	@Autowired
-	private RequestUtil requestUtil;
+    @RequestMapping("/PhotosAddGalleryServlet")
+    public void response(HttpServletResponse response,
+                         @RequestParam(name = "saveGallery", required = false) String saveGallery,
+                         @RequestParam(name = "renameGallery", required = false) String renameGallery,
+                         @RequestParam(name = "saveImage", required = false) String saveImage,
+                         @RequestParam(name = "checksum", required = false) String checksum,
+                         @RequestParam(name = "readlist", required = false) String readlist,
+                         @RequestParam(name = "readalbum", required = false) String readalbum,
+                         @RequestParam(name = "album_key", required = false) String albumKey,
+                         @RequestParam(name = "cleanup", required = false) String cleanup,
+                         @RequestParam(name = "cleanupListHash", required = false) String cleanupListHash,
+                         @RequestParam(name = "galleryName", required = false) String galleryName,
+                         @RequestParam(name = "imageName", required = false) String imageName,
+                         @RequestParam(name = "keyOld", required = false) String keyOld,
+                         @RequestParam(name = "append", required = false) String append
+                        ) throws IOException {
 
-	@RequestMapping("/PhotosAddGalleryServlet")
-	public void response(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        requestUtil.assertLoggedInUser();
 
-		requestUtil.assertLoggedInUser();
+        response.setCharacterEncoding(UTF_8);
+        response.addHeader("Cache-Control", "no-cache");
 
-		Map<String, String> params = new HashMap<>();
-		Enumeration<String> parameterNames = request.getParameterNames();
-		while (parameterNames.hasMoreElements()) {
-			String key = parameterNames.nextElement();
-			params.put(key, request.getParameter(key));
-		}
+        PrintWriter out = response.getWriter();
 
-		response.setCharacterEncoding(UTF_8);
-		response.addHeader("Cache-Control", "no-cache");
+        // TODO: write separate methods for each request
+        if (saveGallery != null) {
+            processor.saveNewGallery(saveGallery);
+        } else if (renameGallery != null) {
+            processor.renameGallery(keyOld, renameGallery);
+        } else if (saveImage != null) {
+            processor.saveNewImage(galleryName, imageName, saveImage, append);
+        } else if (checksum != null) {
+            out.print(processor.checksumFromImage(galleryName, imageName));
+        } else if (readlist != null) {
+            // -> GalleryList
+            out.print(processor.listJson(null, 0L, true));
+        } else if (readalbum != null) {
+            // -> GalleryView
+            out.println(processor.galleryJson(albumKey));
+        } else if (cleanup != null) {
+            processor.cleanUp(cleanup, cleanupListHash);
+        }
 
-		PrintWriter out = response.getWriter();
+        response.setStatus(200);
 
-		// TODO: write separate methods for each request
-		if (params.containsKey("saveGallery")) {
-			processor.saveNewGallery(params);
-		} else if (params.containsKey("renameGallery")) {
-			processor.renameGallery(params);
-		} else if (params.containsKey("saveImage")) {
-			processor.saveNewImage(params);
-		} else if (params.containsKey("checksum")) {
-			out.print(processor.checksumFromImage(params));
-		} else if (params.containsKey("readlist")) {
-			// -> GalleryList
-			out.print(processor.listJson(null, 0L, true));
-		} else if (params.containsKey("readalbum")) {
-			// -> GalleryView
-			out.println(processor.galleryJson(params.get("album_key")));
-		} else if (params.containsKey("cleanup")) {
-			processor.cleanUp(params.get("cleanup"), params.get("cleanupListHash"));
-		} else if (params.containsKey("testConnection")) {
-			// noop
-		}
-		response.setStatus(200);
-
-		out.flush();
-		out.close();
-	}
+        out.flush();
+        out.close();
+    }
 
 }
