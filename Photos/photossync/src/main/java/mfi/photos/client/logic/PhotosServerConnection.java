@@ -1,39 +1,32 @@
 package mfi.photos.client.logic;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.security.GeneralSecurityException;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import mfi.photos.client.model.Album;
+import mfi.photos.client.model.Dimension;
+import mfi.photos.client.model.Photo;
+import mfi.photos.client.model.SyncModel;
 import mfi.photos.shared.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import mfi.photos.client.model.Album;
-import mfi.photos.client.model.Dimension;
-import mfi.photos.client.model.Photo;
-import mfi.photos.client.model.SyncModel;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.util.*;
+import java.util.function.Consumer;
 
 public class PhotosServerConnection {
 
-	private String url;
-	private String credentialUser;
-	private String credentialPass;
-	private String encryptionSecret;
+	private final String url;
+	private final String credentialUser;
+	private final String credentialPass;
+	private final String encryptionSecret;
 
 	public PhotosServerConnection(String url, String credentialUser, String credentialPass, String encryptionSecret) {
 		this.url = url;
@@ -53,9 +46,7 @@ public class PhotosServerConnection {
 			} else {
 				asB64 = Base64.getEncoder().encodeToString(ArrayUtils.subarray(chunkData.bytesIns, 0, chunkData.read));
 			}
-			Map<String, String> parameters = new HashMap<String, String>();
-			parameters.put("login_user", credentialUser);
-			parameters.put("login_pass", credentialPass);
+			Map<String, String> parameters = initParametersWithLoginData();
 			parameters.put("galleryName", chunkData.dir);
 			parameters.put("imageName", chunkData.filename);
 			parameters.put("saveImage", asB64);
@@ -71,13 +62,11 @@ public class PhotosServerConnection {
 
 		String checksumValue = Long.toString(bytesWritten);
 
-		Map<String, String> parameters = new HashMap<String, String>();
-		parameters.put("login_user", credentialUser);
-		parameters.put("login_pass", credentialPass);
+		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("galleryName", dir);
 		parameters.put("imageName", filename);
 		parameters.put("checksum", "");
-		String checksumIs = "";
+		String checksumIs;
 		try {
 			checksumIs = sendPost(parameters, Timeout.SHORT);
 		} catch (Exception e) {
@@ -89,33 +78,25 @@ public class PhotosServerConnection {
 	}
 
 	public void sendGalleryView(GalleryView galleryView)
-			throws UnsupportedEncodingException, HttpException, IOException, GeneralSecurityException {
+			throws IOException, GeneralSecurityException {
 
-		System.out.println("sendGalleryView");
 		galleryView.compressItems();
 		Gson gson = new GsonBuilder().create();
 		String json = gson.toJson(galleryView);
-		System.out.println(json);
-		String asB64 = Base64.getEncoder().encodeToString(json.getBytes("utf-8"));
-		Map<String, String> parameters = new HashMap<String, String>();
-		parameters.put("login_user", credentialUser);
-		parameters.put("login_pass", credentialPass);
+		String asB64 = Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
+		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("saveGallery", asB64);
 		sendPost(parameters, Timeout.SHORT);
 	}
 
 	public void renameGallery(String keyOld, GalleryView galleryViewNew)
-			throws UnsupportedEncodingException, HttpException, IOException, GeneralSecurityException {
+			throws IOException, GeneralSecurityException {
 
-		System.out.println("renameGallery");
 		galleryViewNew.compressItems();
 		Gson gson = new GsonBuilder().create();
 		String json = gson.toJson(galleryViewNew);
-		System.out.println(json);
-		String asB64 = Base64.getEncoder().encodeToString(json.getBytes("utf-8"));
-		Map<String, String> parameters = new HashMap<String, String>();
-		parameters.put("login_user", credentialUser);
-		parameters.put("login_pass", credentialPass);
+		String asB64 = Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
+		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("renameGallery", asB64);
 		parameters.put("keyOld", keyOld);
 		sendPost(parameters, Timeout.SHORT);
@@ -123,12 +104,8 @@ public class PhotosServerConnection {
 
 	public Map<String, String> readAlbumKeysAndHashes() throws Exception {
 
-		System.out.println("readAlbumKeysAndHashes");
-
 		Gson gson = new GsonBuilder().create();
-		Map<String, String> parameters = new HashMap<String, String>();
-		parameters.put("login_user", credentialUser);
-		parameters.put("login_pass", credentialPass);
+		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("readlist", "");
 		String respronse = sendPost(parameters, Timeout.SHORT);
 		GalleryList galleryList = gson.fromJson(respronse, GalleryList.class);
@@ -143,12 +120,8 @@ public class PhotosServerConnection {
 
 	public Map<String, List<String>> readAlbumKeysAndUsers() throws Exception {
 
-		System.out.println("readAlbumKeysAndUsers");
-
 		Gson gson = new GsonBuilder().create();
-		Map<String, String> parameters = new HashMap<String, String>();
-		parameters.put("login_user", credentialUser);
-		parameters.put("login_pass", credentialPass);
+		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("readlist", "");
 		String respronse = sendPost(parameters, Timeout.SHORT);
 		GalleryList galleryList = gson.fromJson(respronse, GalleryList.class);
@@ -162,8 +135,6 @@ public class PhotosServerConnection {
 	}
 
 	public void readPhotos(Album album) throws Exception {
-
-		System.out.println("readPhotoNamesAndHashes");
 
 		GalleryView galleryView = readGalleryView(album.getKey());
 
@@ -180,23 +151,18 @@ public class PhotosServerConnection {
 		album.setHasRemotePhotoData(true);
 	}
 
-	public GalleryView readGalleryView(String albumKey) throws HttpException, IOException, GeneralSecurityException {
+	public GalleryView readGalleryView(String albumKey) throws IOException, GeneralSecurityException {
 
 		Gson gson = new GsonBuilder().create();
-		Map<String, String> parameters = new HashMap<String, String>();
-		parameters.put("login_user", credentialUser);
-		parameters.put("login_pass", credentialPass);
+		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("readalbum", "");
 		parameters.put("album_key", albumKey);
 		String respronse = sendPost(parameters, Timeout.SHORT);
-		GalleryView galleryView = gson.fromJson(respronse, GalleryView.class);
-		return galleryView;
+		return gson.fromJson(respronse, GalleryView.class);
 	}
 
 	public void cleanUp(SyncModel syncModel)
-			throws UnsupportedEncodingException, HttpException, IOException, GeneralSecurityException {
-
-		System.out.println("cleanUp");
+			throws IOException, GeneralSecurityException {
 
 		GalleryList galleryList = new GalleryList(null, syncModel.getAlbums().size(), 0L, null);
 		for (Album album : syncModel.getAlbums()) {
@@ -205,9 +171,7 @@ public class PhotosServerConnection {
 		Gson gson = new GsonBuilder().create();
 		String json = gson.toJson(galleryList);
 
-		Map<String, String> parameters = new HashMap<String, String>();
-		parameters.put("login_user", credentialUser);
-		parameters.put("login_pass", credentialPass);
+		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("cleanup", json);
 		parameters.put("cleanupListHash", DigestUtils.md5Hex(json));
 		sendPost(parameters, Timeout.LONG);
@@ -215,12 +179,7 @@ public class PhotosServerConnection {
 
 	public boolean isConnectionOK() {
 
-		System.out.println("isConnectionOK");
-
-		Map<String, String> parameters = new HashMap<String, String>();
-		parameters.put("login_user", credentialUser);
-		parameters.put("login_pass", credentialPass);
-		parameters.put("cookieok", "true");
+		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("testConnection", "");
 		try {
 			sendPost(parameters, Timeout.SHORT);
@@ -230,8 +189,17 @@ public class PhotosServerConnection {
 		}
 	}
 
+	private Map<String, String> initParametersWithLoginData() {
+
+		Map<String, String> parameters = new HashMap<>();
+		parameters.put("login_user", credentialUser);
+		parameters.put("login_pass", credentialPass);
+		parameters.put("cookieok", "true");
+		return parameters;
+	}
+
 	private String sendPost(Map<String, String> parameters, Timeout timeout)
-			throws HttpException, IOException, GeneralSecurityException {
+			throws  IOException, GeneralSecurityException {
 
 		InputStream in = null;
 
@@ -251,17 +219,16 @@ public class PhotosServerConnection {
 			in = method.getResponseBodyAsStream();
 		}
 		if (statusCode != 200) {
-			System.out.println("statusCode=" + statusCode);
 			throw new IOException();
 		}
-		return StringUtils.trimToEmpty(IOUtils.toString(in));
+		return StringUtils.trimToEmpty(IOUtils.toString(in, StandardCharsets.UTF_8));
 	}
 
 	private enum Timeout {
 
 		LONG(30000), SHORT(3000);
 
-		private Timeout(int wait) {
+		Timeout(int wait) {
 			this.wait = wait;
 		}
 

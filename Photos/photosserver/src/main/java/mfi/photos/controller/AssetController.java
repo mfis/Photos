@@ -5,7 +5,6 @@ import mfi.photos.server.Processor;
 import mfi.photos.shared.GalleryView;
 import mfi.photos.util.GalleryViewCache;
 import mfi.photos.util.RequestUtil;
-import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,14 +28,14 @@ public class AssetController {
 
 	private static final FileDownloadUtil fileDownloadUtil = new FileDownloadUtil();
 
-	@RequestMapping(value = { "/assets/**" }, method = { RequestMethod.HEAD })
+	@RequestMapping(value = { RequestUtil.ASSETS_ANT_PATH }, method = { RequestMethod.HEAD })
 	public @ResponseBody void responseHead(HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
 		response.addHeader("Cache-Control", "no-cache");
 		responseInternal(request, response, false);
 	}
 
-	@GetMapping(value = { "/assets/**" })
+	@GetMapping(value = { RequestUtil.ASSETS_ANT_PATH })
 	public @ResponseBody void responseGetPost(HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
 		response.addHeader("Cache-Control", "private, max-age=600");
@@ -55,11 +54,9 @@ public class AssetController {
 				fileDownloadUtil.process(request, response, file, content);
 			}else{
 				response.setStatus(401);
-				return;
 			}
 		}else{
 			response.setStatus(404);
-			return;
 		}
 	}
 }

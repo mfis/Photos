@@ -39,6 +39,9 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 	@Value("${server.servlet.session.cookie.secure}")
 	private String cookieSecure;
 
+	@Value("${technicalUser}")
+	private String technicalUser;
+
 	private final AntPathMatcher antPathMatcher = new AntPathMatcher();
 
 	@Override
@@ -82,7 +85,9 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 				Optional<UserAuthentication> optionalUserAuthentication = tryToLoginWithUserCredentials(req);
 				if(optionalUserAuthentication.isPresent()){
 					requestUtil.defineUserForRequest(optionalUserAuthentication.get());
-					cookieWrite(resp, optionalUserAuthentication.get().getNewToken());
+					if(sentToken(optionalUserAuthentication.get())){
+						cookieWrite(resp, optionalUserAuthentication.get().getNewToken());
+					}
 				}else{
 					loginReturn.setSentRedirectToLogin(sendRedirect(req, resp, "credentials"));
 				}
@@ -106,6 +111,14 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 		}
 
 		return loginReturn;
+	}
+
+	private boolean sentToken(UserAuthentication userAuthentication) {
+		return !isTechnicalUser(userAuthentication.getPrincipal().getName());
+	}
+
+	private boolean isTechnicalUser(String name){
+		return name.equals(technicalUser);
 	}
 
 	private boolean isUriStaticResource(String uri) {

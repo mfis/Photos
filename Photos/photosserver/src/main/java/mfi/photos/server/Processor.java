@@ -239,8 +239,7 @@ public class Processor {
 
 		for (String string : keySet) {
 			GalleryView galleryView = GalleryViewCache.getInstance().read(string);
-			if (galleryView.getUsersAsList().contains(user)
-					|| user.equals(technicalUser)) {
+			if (galleryView.getUsersAsList().contains(user) || user.equals(technicalUser)) {
 				galleryViews.add(galleryView);
 			}
 		}

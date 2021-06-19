@@ -2,6 +2,7 @@ package mfi.photos.util;
 
 import mfi.photos.auth.UserAuthentication;
 import mfi.photos.auth.UserPrincipal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +21,8 @@ public class RequestUtil {
     public static final String HEADER_USER_AGENT = "user-agent";
 
     public static final String COOKIE_NAME = "PhotosLoginCookie";
+
+    public static final String ASSETS_ANT_PATH = "/assets/**";
 
     public void assertLoggedInUser(){
         if(lookupUserPrincipal().isEmpty()){
@@ -73,5 +76,4 @@ public class RequestUtil {
         response.setHeader("X-Frame-Options", "deny");
         response.setHeader("X-Content-Type-Options", "nosniff");
     }
-
 }

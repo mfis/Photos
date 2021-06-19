@@ -8,18 +8,18 @@ public class EstimatedUploadTime {
 	private final static long UPLOAD_TIME_GALLERY_JSON = 1000L;
 	private final static long CLEANUP_TIME = 1000L;
 
-	private int albumCount = 0;
-	private long sumFileSize = 0;
-	List<Long> megaByteProcessingDuration = new LinkedList<>();
-	private long bytesProcessed = 0;
-	private int albumCompletedCount = 0;
-	private long actualPhotoUploadStartTime = 0;
-	private boolean completed = false;
+	private final int albumCount;
+	private final long sumFileSize;
+	List<Long> megaByteProcessingDuration;
+	private long bytesProcessed;
+	private int albumCompletedCount;
+	private long actualPhotoUploadStartTime;
+	private boolean completed;
 
 	public EstimatedUploadTime(int albumCount, long sumFileSize) {
 		this.albumCount = albumCount;
 		this.sumFileSize = sumFileSize;
-		megaByteProcessingDuration.clear();
+		megaByteProcessingDuration = new LinkedList<>();
 		albumCompletedCount = 0;
 		actualPhotoUploadStartTime = 0;
 		bytesProcessed = 0;
@@ -86,21 +86,7 @@ public class EstimatedUploadTime {
 		} else {
 			int h = seconds / (60 * 60);
 			int m = (seconds / 60) - (h * 60);
-			return h + " Stunde" + (h == 1 ? "" : "n") + (m == 0 ? "" : (", " + m + " Minute" + (m == 0 ? "" : "n")));
+			return h + " Stunde" + (h == 1 ? "" : "n") + (m == 0 ? "" : (", " + m + " Minute" + (m == 1 ? "" : "n")));
 		}
-	}
-
-	public static void main(String[] args) {
-
-		System.out.println("30   = " + formatSeconds(30));
-		System.out.println("55   = " + formatSeconds(55));
-		System.out.println("60   = " + formatSeconds(60));
-		System.out.println("80   = " + formatSeconds(80));
-		System.out.println("91   = " + formatSeconds(91));
-		System.out.println("600  = " + formatSeconds(600));
-		System.out.println("3600 = " + formatSeconds(3600));
-		System.out.println("7200 = " + formatSeconds(7200));
-		System.out.println("8000 = " + formatSeconds(8000));
-
 	}
 }
