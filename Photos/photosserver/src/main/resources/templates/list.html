@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<!-- HEAD -->
+</head>
+<body class=" pace-done">
+
+	<div class="wrapper " id="idwrapper">	
+		
+		<div class="headertablediv">
+			<table class="headertable">
+				<tr>
+					<td class="headertd1" id="logout"><div class="figureicon20 svglogout"></div></td>
+					<td class="headertd2"><div class="truncate-ellipsis"><span id="overview"></span></div></td>
+				</tr>
+			</table>
+		</div>		
+		
+		<div class="headerspacer"></div>
+
+		<div class="inputWrapper"><input id="idSearch" autocomplete="off" onkeyup="filter();" onreset="filter();" onsearch="filter();" type="search" name="search" placeholder="Suchen"></div>
+		
+		<div id="rows"></div>
+	</div>
+
+	<script>
+	
+		var processed = '';	
+		var monitor = false;
+		var items = '/*JSONFILE*/';
+		var obj = JSON.parse(items);
+		
+		document.getElementById("overview").innerHTML = "Fotos von " + obj.user;
+		document.getElementById("logout").onclick = function(z) {
+			window.location.href = "/logout";
+		}
+		
+		document.getElementById("idSearch").value = obj.search; 
+		list(obj.search);		
+		if (obj.posY > 0) {
+			window.scrollTo(0, obj.posY);
+		}
+	
+		function filter() {
+			setTimeout(interval, 100);
+		}
+		
+		function interval(){
+			var string = document.getElementById("idSearch").value;
+			if(processed === string){
+				return;
+			}
+			if(monitor==true){
+				setTimeout(interval, 100);
+				return;
+			}
+			list(string);
+			processed = string;
+		}
+
+		function list(f){
+		
+			monitor = true;
+			document.getElementById("idwrapper").removeChild(document.getElementById("rows"));
+
+			var rows = document.createElement("DIV");
+			rows.id = "rows";
+			document.getElementById("idwrapper").appendChild(rows);
+
+			
+			for (var i = 0; i < obj.list.length; i++) {
+				var print = true;
+				if(f === ""){
+					// show every element if filterstring is empty
+				}else{
+					var parts = f.split(" ");
+					for (var p = 0; p < parts.length; p++) {
+						if(parts[p] === ""){
+							// ignore empty parts
+						}else{
+							if (obj.list[i].name.toLowerCase().indexOf(parts[p].toLowerCase()) > -1){
+								print = true;
+							}else if(obj.list[i].identifier && obj.list[i].identifier!=='undefined' 
+									&& obj.list[i].identifier.toLowerCase().indexOf(parts[p].toLowerCase()) > -1){
+								print = true;
+							}else if(obj.list[i].normDate && obj.list[i].normDate!=='undefined' 
+								&& obj.list[i].normDate.toLowerCase().indexOf(parts[p].toLowerCase()) > -1){
+								print = true;
+							}else{
+    							print = false;
+    							break;
+							}
+						}
+					}
+				}
+			
+				if(print == true){			
+					var elemDiv = document.createElement("DIV");
+					elemDiv.id = "list-" + obj.list[i].key;
+					elemDiv.className = "row entry";
+					elemDiv.onclick = function(z) {
+						var index = z.target.id.split("-")[1];
+						window.location.href = "?gallery=" + index + "&y="
+							+ window.scrollY + "&s=" + encodeURI(document.getElementById("idSearch").value);
+					}	
+					
+					var spanTitle = document.createElement("SPAN");
+					spanTitle.id = "spanA-" + obj.list[i].key;
+					spanTitle.className = "rowspan entry";
+					spanTitle.innerHTML = obj.list[i].name; 
+					elemDiv.appendChild(spanTitle);
+
+					if(obj.list[i].identifier && obj.list[i].identifier!=='undefined'){
+						var spanDate = document.createElement("SPAN");
+						spanDate.id = "spanB-" + obj.list[i].key;
+						spanDate.className = "rowspan entryDark";
+						spanDate.innerHTML = '&nbsp&nbsp;' + obj.list[i].identifier; 
+						elemDiv.appendChild(spanDate);
+					}
+					
+					document.getElementById("rows").appendChild(elemDiv);
+				}
+			}
+			monitor = false;
+		}
+		
+	</script>
+
+</body>
+</html>

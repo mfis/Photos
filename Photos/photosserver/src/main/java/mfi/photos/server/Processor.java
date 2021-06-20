@@ -17,6 +17,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.ui.Model;
 
 import java.io.*;
 import java.net.URL;
@@ -206,15 +207,10 @@ public class Processor {
 		}
 	}
 
-	public String loginscreenHTML(String message) {
+	public void loginscreenHTML(String message, Model model) {
 
-		String html = IOUtil.readContentFromFileInClasspath("login.html");
-		String htmlHead = IOUtil.readContentFromFileInClasspath("htmlhead");
-		html = StringUtils.replace(html, "<!-- HEAD -->", htmlHead);
-		html = StringUtils.replace(html, "/*JSONFILE*/", StringUtils.trimToEmpty(message));
-		html = StringUtils.replace(html, "/*LAWLINK*/",
-				StringUtils.trimToEmpty(linkToLawSite));
-		return html;
+		model.addAttribute("message", StringUtils.trimToEmpty(message));
+		model.addAttribute("lawlink", StringUtils.trimToEmpty(linkToLawSite));
 	}
 
 	public void listHTML(Long yPos, String searchString, StringBuilder sb) {

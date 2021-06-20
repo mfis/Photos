@@ -10,7 +10,8 @@ import java.net.URLConnection;
 
 public class IOUtil {
 
-	public static String readContentFromFileInClasspath(String name) {
+	@Deprecated
+	public static String readContentFromFileInClasspath(String name) { // FIXME
 
 		try {
 			URL url = new IOUtil().getClass().getClassLoader().getResource(name);

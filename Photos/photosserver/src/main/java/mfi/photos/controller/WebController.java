@@ -10,6 +10,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,31 +36,30 @@ public class WebController {
 	private Environment env;
 
 	@RequestMapping(RequestUtil.PATH_LOGIN)
-	public @ResponseBody void login(HttpServletResponse response, @RequestParam(name = "reason", required = false) String reason) throws IOException {
+	public String login(Model model, HttpServletResponse response, @RequestParam(name = "reason", required = false) String reason) {
 
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
 		response.addHeader("Cache-Control", "no-cache");
 		requestUtil.setEssentialHeader(response);
-		response.getWriter().print(processor.loginscreenHTML(loginReasonText(reason)));
-	}
 
-	private String loginReasonText(String key){
-		if(StringUtils.isBlank(key)){
-			return null;
-		}
-		return env.getProperty("login.failure.reason." + key);
+		processor.loginscreenHTML(loginReasonText(reason), model);
+
+		return "login";
 	}
 
 	@GetMapping(RequestUtil.PATH_LOGOUT)
-	public @ResponseBody void logout(HttpServletResponse response) throws IOException {
+	public String logout(Model model, HttpServletResponse response) {
 
 		log.info(RequestUtil.PATH_LOGOUT);
 		response.setContentType("text/html");
 		response.setCharacterEncoding(UTF_8);
 		response.addHeader("Cache-Control", "no-cache");
 		requestUtil.setEssentialHeader(response);
-		response.getWriter().print(processor.loginscreenHTML("Sie wurden abgemeldet."));
+
+		processor.loginscreenHTML("Sie wurden abgemeldet.", model);
+
+		return "login";
 	}
 
 	@RequestMapping("/")
@@ -96,5 +96,13 @@ public class WebController {
 		out.write(sb.toString());
 		out.flush();
 		out.close();
+	}
+
+	private String loginReasonText(String key){
+
+		if(StringUtils.isBlank(key)){
+			return null;
+		}
+		return env.getProperty("login.failure.reason." + key);
 	}
 }
