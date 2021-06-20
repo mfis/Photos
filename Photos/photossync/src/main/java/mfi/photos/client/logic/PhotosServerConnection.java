@@ -8,14 +8,21 @@ import mfi.photos.client.model.Photo;
 import mfi.photos.client.model.SyncModel;
 import mfi.photos.shared.*;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -52,7 +59,7 @@ public class PhotosServerConnection {
 			parameters.put("saveImage", asB64);
 			parameters.put("append", String.valueOf(append));
 			try {
-				sendPost(parameters, Timeout.LONG);
+				sendPost(parameters);
 			} catch (IOException | GeneralSecurityException e) {
 				throw new RuntimeException("upload failed", e);
 			}
@@ -67,11 +74,14 @@ public class PhotosServerConnection {
 		parameters.put("imageName", filename);
 		parameters.put("checksum", "");
 		String checksumIs;
+
 		try {
-			checksumIs = sendPost(parameters, Timeout.SHORT);
+			checksumIs = sendPost(parameters);
 		} catch (Exception e) {
 			throw new RuntimeException("Error checksum file:", e);
 		}
+
+		assert checksumIs != null;
 		if (!checksumIs.equals(checksumValue)) {
 			throw new IllegalStateException("checksum error: " + filename + ": " + checksumIs + " / " + checksumValue);
 		}
@@ -86,7 +96,7 @@ public class PhotosServerConnection {
 		String asB64 = Base64.getEncoder().encodeToString(json.getBytes(StandardCharsets.UTF_8));
 		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("saveGallery", asB64);
-		sendPost(parameters, Timeout.SHORT);
+		sendPost(parameters);
 	}
 
 	public void renameGallery(String keyOld, GalleryView galleryViewNew)
@@ -99,7 +109,7 @@ public class PhotosServerConnection {
 		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("renameGallery", asB64);
 		parameters.put("keyOld", keyOld);
-		sendPost(parameters, Timeout.SHORT);
+		sendPost(parameters);
 	}
 
 	public Map<String, String> readAlbumKeysAndHashes() throws Exception {
@@ -107,7 +117,7 @@ public class PhotosServerConnection {
 		Gson gson = new GsonBuilder().create();
 		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("readlist", "");
-		String respronse = sendPost(parameters, Timeout.SHORT);
+		String respronse = sendPost(parameters);
 		GalleryList galleryList = gson.fromJson(respronse, GalleryList.class);
 
 		Map<String, String> keysAndHashes = new HashMap<>();
@@ -123,7 +133,7 @@ public class PhotosServerConnection {
 		Gson gson = new GsonBuilder().create();
 		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("readlist", "");
-		String respronse = sendPost(parameters, Timeout.SHORT);
+		String respronse = sendPost(parameters);
 		GalleryList galleryList = gson.fromJson(respronse, GalleryList.class);
 
 		Map<String, List<String>> keysAndUsers = new HashMap<>();
@@ -157,7 +167,7 @@ public class PhotosServerConnection {
 		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("readalbum", "");
 		parameters.put("album_key", albumKey);
-		String respronse = sendPost(parameters, Timeout.SHORT);
+		String respronse = sendPost(parameters);
 		return gson.fromJson(respronse, GalleryView.class);
 	}
 
@@ -174,7 +184,7 @@ public class PhotosServerConnection {
 		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("cleanup", json);
 		parameters.put("cleanupListHash", DigestUtils.md5Hex(json));
-		sendPost(parameters, Timeout.LONG);
+		sendPost(parameters);
 	}
 
 	public boolean isConnectionOK() {
@@ -182,7 +192,7 @@ public class PhotosServerConnection {
 		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("testConnection", "");
 		try {
-			sendPost(parameters, Timeout.SHORT);
+			sendPost(parameters);
 			return true;
 		} catch (Exception e) {
 			return false;
@@ -198,45 +208,38 @@ public class PhotosServerConnection {
 		return parameters;
 	}
 
-	private String sendPost(Map<String, String> parameters, Timeout timeout)
+	private String sendPost(Map<String, String> parameters)
 			throws  IOException, GeneralSecurityException {
 
-		InputStream in = null;
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 
-		HttpClient client = new HttpClient();
-		client.getParams().setParameter("http.connection.timeout", timeout.getWait());
+			HttpPost request = new HttpPost(url);
+			request.addHeader("user-agent", "photssync");
 
-		PostMethod method = new PostMethod(url);
-		method.setRequestHeader("user-agent", "photssync");
+			List<NameValuePair> params = new ArrayList<>();
+			for (String key : parameters.keySet()) {
+				params.add(new BasicNameValuePair(key, parameters.get(key)));
+			}
 
-		for (String key : parameters.keySet()) {
-			method.addParameter(key, parameters.get(key));
-		}
+			URI uri = new URIBuilder(request.getURI()).addParameters(params).build();
+			request.setURI(uri);
 
-		int statusCode = client.executeMethod(method);
+			try (CloseableHttpResponse response = httpClient.execute(request)) {
 
-		if (statusCode != -1) {
-			in = method.getResponseBodyAsStream();
-		}
-		if (statusCode != 200) {
-			throw new IOException();
-		}
-		return StringUtils.trimToEmpty(IOUtils.toString(in, StandardCharsets.UTF_8));
-	}
+				if (response.getStatusLine().getStatusCode() != 200) {
+					throw new IOException("http rc=" + response.getStatusLine().getStatusCode());
+				}
 
-	private enum Timeout {
+				HttpEntity entity = response.getEntity();
+				if (entity != null) {
+					return EntityUtils.toString(entity);
+				} else {
+					return null;
+				}
 
-		LONG(30000), SHORT(3000);
-
-		Timeout(int wait) {
-			this.wait = wait;
-		}
-
-		int wait;
-
-		public int getWait() {
-			return wait;
+			}
+		} catch (URISyntaxException e) {
+			throw new IllegalStateException("uri syntax error:", e);
 		}
 	}
-
 }

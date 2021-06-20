@@ -56,13 +56,13 @@ public class ImageProcessing {
 		NON_SUPPORTED_PIXEL_FORMATS.add("yuvj422p"); // lower case!
 	}
 
-	private static List<String> NON_NATIVE_PHOTO_FORMATS = new ArrayList<>();
+	private static final List<String> NON_NATIVE_PHOTO_FORMATS = new ArrayList<>();
 	static {
 		NON_NATIVE_PHOTO_FORMATS.add("heic");
 	}
 
-	private String ffmpegDir;
-	private String tempFileDir;
+	private final String ffmpegDir;
+	private final String tempFileDir;
 
 	public ImageProcessing(String ffmpegDir, String tempFilePath) {
 		this.ffmpegDir = ffmpegDir;
@@ -87,7 +87,7 @@ public class ImageProcessing {
 		StringBuilder sb = readProcessResponse(p);
 
 		if (!new File(outPath).exists()) {
-			throw new IOException("error creating single frame: " + sb.toString());
+			throw new IOException("error creating single frame: " + sb);
 		}
 
 		BufferedImage large = ImageIO.read(new File(tempFileDir + "/photos_frame.bmp"));
@@ -199,11 +199,11 @@ public class ImageProcessing {
 
 		FFmpegExecutor executor = new FFmpegExecutor(ffmpeg, ffprobe);
 		FFmpegJob job = executor.createJob(fmpegBuilder, new ProgressListener() {
-			final double duration_ms = probeResult.getFormat().duration * TimeUnit.SECONDS.toMillis(10L);
+			final double durationNanos = probeResult.getFormat().duration * TimeUnit.SECONDS.toNanos(10L);
 
 			@Override
 			public void progress(Progress progress) {
-				double percentageDouble = progress.out_time_ms / duration_ms;
+				double percentageDouble = progress.out_time_ns / durationNanos;
 				int percentage = (int) percentageDouble;
 				System.out.println(percentage);
 			}

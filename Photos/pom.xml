@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.5</version>
+		<version>2.4.7</version>
 		<relativePath />
 	</parent>
 
@@ -28,10 +28,13 @@
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<!-- Dependency versions -->
-		<spring-boot.version>2.4.5</spring-boot.version>
+		<spring-boot.version>2.4.7</spring-boot.version>
 		<files-api.version>2.0</files-api.version>
+		<ffmpeg.version>0.6.2</ffmpeg.version>
+		<commons-codec.version>1.15</commons-codec.version>
 		<!-- Plugin versions -->
 		<maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+		<maven-assembly-plugin.version>3.3.0</maven-assembly-plugin.version>
 		<StaticResourceProcessing.version>1.5.1</StaticResourceProcessing.version>
 		<lifecycle-mapping.version>1.0.0</lifecycle-mapping.version>
 		<dependency-check-maven.version>6.1.5</dependency-check-maven.version>
@@ -50,7 +53,7 @@
 	<build>
 		<pluginManagement>
 			<plugins>
-				<!--<plugin>
+				<plugin>
 					<groupId>org.owasp</groupId>
 					<artifactId>dependency-check-maven</artifactId>
 					<version>${dependency-check-maven.version}</version>
@@ -65,7 +68,7 @@
 							</goals>
 						</execution>
 					</executions>
-				</plugin> -->
+				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
@@ -77,13 +80,13 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-		<!-- <plugins>
+		<plugins>
 			<plugin>
 				<groupId>org.owasp</groupId>
 				<artifactId>dependency-check-maven</artifactId>
 				<version>${dependency-check-maven.version}</version>
 			</plugin>
-		</plugins> -->
+		</plugins>
 	</build>
 
 </project>
