@@ -27,7 +27,7 @@ public class GalleryViewCache {
 	}
 
 	private Map<String, GalleryView> buildNewMap() {
-		return Collections.synchronizedMap(new LinkedHashMap<String, GalleryView>());
+		return Collections.synchronizedMap(new LinkedHashMap<>());
 	}
 
 	private GalleryViewCache() {
@@ -62,14 +62,18 @@ public class GalleryViewCache {
 			String s = f.getName() + f.length() + "#" + f.lastModified();
 			result = 37 * result + s.hashCode();
 		}
-		return files.length + "*" + String.valueOf(result);
+		return files.length + "*" + result;
 	}
 
 	public synchronized void refresh(String dir, Gson gson) {
 
 		File[] files = new File(dir).listFiles();
-		String dirHashCode = dirHashCode(files);
+		if(files == null){
+			reset();
+			return;
+		}
 
+		String dirHashCode = dirHashCode(files);
 		if (dirHashCode.equals(hashCode)) {
 			return;
 		}
@@ -80,7 +84,7 @@ public class GalleryViewCache {
 
 			if (StringUtils.endsWithIgnoreCase(file.getName(), ".json")) {
 				if (file.exists() && file.isFile() && file.canRead()) {
-					String fileString = null;
+					String fileString;
 					try {
 						fileString = FileUtils.readFileToString(file, "UTF-8");
 					} catch (IOException e) {

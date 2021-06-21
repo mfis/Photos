@@ -2,11 +2,11 @@ package mfi.photos.util;
 
 import mfi.photos.auth.UserAuthentication;
 import mfi.photos.auth.UserPrincipal;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -70,10 +70,12 @@ public class RequestUtil {
         return antPaths;
     }
 
-    public void setEssentialHeader(HttpServletResponse response) {
+    public void setEssentialHtmlRequestHeader(HttpServletResponse response) {
+        response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         response.setHeader("Referrer-Policy", "no-referrer");
         response.setHeader("content-security-policy", "frame-ancestors 'none';");
         response.setHeader("X-Frame-Options", "deny");
         response.setHeader("X-Content-Type-Options", "nosniff");
+        response.addHeader("Cache-Control", "no-cache");
     }
 }

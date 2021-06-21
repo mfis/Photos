@@ -22,6 +22,14 @@
         <link rel="stylesheet" href="staticresources/style.css?12"></link>
         <script src='staticresources/script.js?19'></script>
         <script src='staticresources/blazy.js?1'></script>
+
+        <th:block th:if="${#strings.equals(site, 'gallery')}">
+            <link rel='stylesheet prefetch' href='photoswipe/photoswipe.css'>
+            <link rel='stylesheet prefetch' href='photoswipe/default-skin/default-skin.css'>
+            <script src='photoswipe/photoswipe.min.js'></script>
+            <script src='photoswipe/photoswipe-ui-default.min.js'></script>
+        </th:block>
+
         <title>Photos</title>
     </head>
 

@@ -14,17 +14,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.PrintWriter;
 
 @Controller
 @CommonsLog
 public class WebController {
-
-	private static final String UTF_8 = "UTF-8";
 
 	@Autowired
 	private Processor processor;
@@ -38,64 +34,40 @@ public class WebController {
 	@RequestMapping(RequestUtil.PATH_LOGIN)
 	public String login(Model model, HttpServletResponse response, @RequestParam(name = "reason", required = false) String reason) {
 
-		response.setContentType("text/html");
-		response.setCharacterEncoding(UTF_8);
-		response.addHeader("Cache-Control", "no-cache");
-		requestUtil.setEssentialHeader(response);
-
+		requestUtil.setEssentialHtmlRequestHeader(response);
 		processor.loginscreenHTML(loginReasonText(reason), model);
-
 		return "login";
 	}
 
 	@GetMapping(RequestUtil.PATH_LOGOUT)
 	public String logout(Model model, HttpServletResponse response) {
 
-		log.info(RequestUtil.PATH_LOGOUT);
-		response.setContentType("text/html");
-		response.setCharacterEncoding(UTF_8);
-		response.addHeader("Cache-Control", "no-cache");
-		requestUtil.setEssentialHeader(response);
-
+		requestUtil.setEssentialHtmlRequestHeader(response);
 		processor.loginscreenHTML("Sie wurden abgemeldet.", model);
-
 		return "login";
 	}
 
 	@RequestMapping("/")
-	public @ResponseBody void response(HttpServletResponse response,
+	public String response(Model model, HttpServletResponse response,
 									   @RequestParam(name = "y", required = false) Long yPos,
 									   @RequestParam(name = "s", required = false) String searchString,
 									   @RequestParam(name = "gallery", required = false) String galleryName
 									   ) throws IOException {
 
 		requestUtil.assertLoggedInUser();
-
-		response.setContentType("text/html");
-		response.setCharacterEncoding(UTF_8);
-		response.addHeader("Cache-Control", "no-cache");
-		requestUtil.setEssentialHeader(response);
-
-		StringBuilder sb = new StringBuilder();
+		requestUtil.setEssentialHtmlRequestHeader(response);
 
 		if (galleryName!=null) {
 			GalleryView view = GalleryViewCache.getInstance().read(StringEscapeUtils.escapeHtml4(galleryName));
 			String user = requestUtil.assertUserAndGetName();
 			if (view != null && view.getUsersAsList().contains(user)) {
-				processor.galleryHTML(yPos, searchString, galleryName, sb);
-			}else{
-				processor.listHTML(yPos, searchString, sb);
+				processor.galleryHTML(yPos, searchString, galleryName, model);
+				return "gallery";
 			}
-		} else {
-			processor.listHTML(yPos, searchString, sb);
 		}
 
-		response.setStatus(200);
-
-		PrintWriter out = response.getWriter();
-		out.write(sb.toString());
-		out.flush();
-		out.close();
+		processor.listHTML(yPos, searchString, model);
+		return "list";
 	}
 
 	private String loginReasonText(String key){

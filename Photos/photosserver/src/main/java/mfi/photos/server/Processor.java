@@ -85,7 +85,7 @@ public class Processor {
 		String jsonDir = lookupListDir();
 		String newJson = new String(Base64.getDecoder().decode(base64StringGalleryName), StandardCharsets.UTF_8);
 		GalleryView galleryView = gson.fromJson(newJson, GalleryView.class);
-		FileUtils.writeStringToFile(new File(jsonDir + galleryView.getKey() + ".json"), newJson);
+		FileUtils.writeStringToFile(new File(jsonDir + galleryView.getKey() + ".json"), newJson, StandardCharsets.UTF_8);
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 	}
 
@@ -104,7 +104,7 @@ public class Processor {
 		}
 
 		// save new gallery
-		FileUtils.writeStringToFile(new File(jsonDir + galleryView.getKey() + ".json"), newJson);
+		FileUtils.writeStringToFile(new File(jsonDir + galleryView.getKey() + ".json"), newJson, StandardCharsets.UTF_8);
 
 		// delete old gallery
 		File oldJsonFile = new File(jsonDir + keyOld + ".json");
@@ -116,25 +116,18 @@ public class Processor {
 		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 	}
 
-	public void galleryHTML(Long yPos, String searchString, String galleryName, StringBuilder sb)
+	public void galleryHTML(Long yPos, String searchString, String galleryName, Model model)
 			throws IOException {
-
-		String html = IOUtil.readContentFromFileInClasspath("gallery.html");
-		String htmlHead = IOUtil.readContentFromFileInClasspath("htmlhead");
 
 		GalleryView galleryView = deepCopyGalleryView(GalleryViewCache.getInstance().read(StringEscapeUtils.escapeHtml4(galleryName)));
 		galleryView.truncateHashes();
 		URL baseUrl = new URL(galleryView.getBaseURL());
 		galleryView.setBaseURL(StringUtils.removeStart(baseUrl.getPath(), StringUtils.substringBefore(baseUrl.getPath(), "/assets/")));
-		DisplayNameUtil.createDisplayName(galleryView);
 		String json = gson.toJson(galleryView);
 
-		html = StringUtils.replace(html, "<!-- HEAD -->", htmlHead);
-		html = StringUtils.replace(html, "/*LISTYPOS*/", Long.toString(yPos));
-		html = StringUtils.replace(html, "/*LISTSEARCH*/", searchString);
-		html = StringUtils.replace(html, "/*JSONFILE*/", json);
-
-		sb.append(html);
+		model.addAttribute("jsonfile", StringUtils.trimToEmpty(json));
+		model.addAttribute("ypos", StringUtils.trimToEmpty(Long.toString(yPos)));
+		model.addAttribute("search", StringUtils.trimToEmpty(searchString));
 	}
 
 	public String galleryJson(String key) throws IOException {
@@ -213,15 +206,10 @@ public class Processor {
 		model.addAttribute("lawlink", StringUtils.trimToEmpty(linkToLawSite));
 	}
 
-	public void listHTML(Long yPos, String searchString, StringBuilder sb) {
+	public void listHTML(Long yPos, String searchString, Model model) {
 
 		String json = listJson(searchString, yPos, false);
-
-		String html = IOUtil.readContentFromFileInClasspath("list.html");
-		String htmlHead = IOUtil.readContentFromFileInClasspath("htmlhead");
-		html = StringUtils.replace(html, "<!-- HEAD -->", htmlHead);
-		html = StringUtils.replace(html, "/*JSONFILE*/", json);
-		sb.append(html);
+		model.addAttribute("jsonfile", StringUtils.trimToEmpty(json));
 	}
 
 	public String listJson(String s, Long yPos, boolean withHashesAndUsers) {
