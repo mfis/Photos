@@ -26,22 +26,12 @@ public class DisplayNameUtil {
 	private static final DateTimeFormatter DATE_FORMAT_YEAR = DateTimeFormatter.ofPattern("yyyy")
 			.withLocale(Locale.GERMAN);
 
-	// public static void main(String[] args) {
-	// System.out.println(lookupDisplayDate("2017_09_11"));
-	// System.out.println(lookupDisplayDate("2017_10_xX"));
-	// System.out.println(lookupDisplayDate("2017_XX_xX "));
-	// System.out.println(lookupDisplayDate("201x_XX_xX"));
-	// System.out.println(lookupDisplayDate("xXxx_XX_xX"));
-	// System.out.println(lookupDisplayDate("9999_99_99"));
-	// System.out.println(lookupDisplayDate("no date"));
-	// }
-
 	public static synchronized void createDisplayName(GalleryView galleryView) {
 
 		String localName = StringUtils.trim(galleryView.getGalleryname());
 		String date = StringUtils.substringBefore(localName, " ");
 		String caption = StringUtils.trim(StringUtils.removeStart(localName, date));
-		String displayDate = "";
+		String displayDate;
 		String sortKey = "";
 
 		String[] dates = StringUtils.split(date, '-');
@@ -67,7 +57,7 @@ public class DisplayNameUtil {
 
 	private static String lookupDisplayDate(String date) {
 
-		String displayDate = "";
+		String displayDate;
 		Matcher m0Now = P0_NOW.matcher(date);
 		if (m0Now.matches()) {
 			displayDate = "jetzt";

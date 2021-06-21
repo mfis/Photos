@@ -3,6 +3,7 @@ package mfi.photos.util;
 import org.springframework.cache.interceptor.KeyGenerator;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
@@ -10,7 +11,7 @@ import java.util.Arrays;
 public class CacheKeyGenerator implements KeyGenerator {
 
     @Override
-    public Object generate(Object target, Method method, Object... params) {
+    public @Nonnull Object generate(Object target, Method method, @Nonnull Object... params) {
         StringBuilder sb = new StringBuilder();
         sb.append(target.getClass().getSimpleName()).append("#");
         sb.append(method.getName());

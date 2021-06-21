@@ -13,13 +13,12 @@ public class KeyAccess {
 
 	private static final Object monitor = new Object();
 
-	private String uptime;
+	private final String uptime= String.valueOf(System.currentTimeMillis());
 
 	private byte[] key;
 
 	private KeyAccess() {
 		key = null;
-		uptime = String.valueOf(System.currentTimeMillis());
 	}
 
 	public static KeyAccess getInstance() {
@@ -49,8 +48,7 @@ public class KeyAccess {
 			final var in = new ByteArrayInputStream(this.key);
 			final var out = new ByteArrayOutputStream()){
 				AES.decrypt(getUptime().toCharArray(), in, out, 0, -1);
-				String key = new String(out.toByteArray(), StandardCharsets.UTF_8);
-				return key;
+				return out.toString(StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			throw new IllegalStateException("StreamHandling failed.", e);
 		}
@@ -69,10 +67,6 @@ public class KeyAccess {
 
 	public String getUptime() {
 		return uptime;
-	}
-
-	public void setUptime(String uptime) {
-		this.uptime = uptime;
 	}
 
 }
