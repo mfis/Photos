@@ -18,7 +18,9 @@ import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableCaching
-class TokenCacheConfig extends CachingConfigurerSupport {
+public class AuthCacheConfig extends CachingConfigurerSupport {
+
+    public static final String CACHE_NAME = "authCache";
 
     @Bean
     @Override
@@ -28,12 +30,12 @@ class TokenCacheConfig extends CachingConfigurerSupport {
             @Override
             @Nonnull
             protected Cache createConcurrentMapCache(@Nonnull final String name) {
-                return new ConcurrentMapCache(name, CacheBuilder.newBuilder().expireAfterWrite(1500, TimeUnit.MILLISECONDS)
+                return new ConcurrentMapCache(name, CacheBuilder.newBuilder().expireAfterWrite(2500, TimeUnit.MILLISECONDS)
                         .maximumSize(10).build().asMap(), false);
             }
         };
 
-        cacheManager.setCacheNames(Collections.singletonList("tokenCache"));
+        cacheManager.setCacheNames(Collections.singletonList(CACHE_NAME));
         return cacheManager;
     }
 

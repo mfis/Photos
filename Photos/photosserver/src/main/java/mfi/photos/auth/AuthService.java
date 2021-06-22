@@ -4,6 +4,7 @@ import lombok.extern.apachecommons.CommonsLog;
 import mfi.files.api.DeviceType;
 import mfi.files.api.TokenResult;
 import mfi.files.api.UserService;
+import mfi.photos.config.AuthCacheConfig;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 
 @Component
-@CacheConfig(cacheNames = "tokenCache")
+@CacheConfig(cacheNames = AuthCacheConfig.CACHE_NAME)
 @CommonsLog
 public class AuthService {
 
@@ -63,6 +64,7 @@ public class AuthService {
         }
     }
 
+    @Cacheable
     public Optional<String> requestSecureKey(String token, String userAgent){
 
         String user = userService.userNameFromLoginCookie(token);

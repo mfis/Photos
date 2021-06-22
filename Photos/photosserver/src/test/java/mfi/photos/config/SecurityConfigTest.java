@@ -3,7 +3,6 @@ package mfi.photos.config;
 import mfi.files.api.DeviceType;
 import mfi.files.api.TokenResult;
 import mfi.files.api.UserService;
-import mfi.photos.util.KeyAccess;
 import mfi.photos.util.RequestUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,8 +20,6 @@ import javax.servlet.http.Cookie;
 import java.util.Objects;
 
 import static mfi.photos.util.RequestUtil.COOKIE_NAME;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
@@ -54,7 +51,6 @@ class SecurityConfigTest {
     @BeforeEach
     public void beforeEach(){
 
-        KeyAccess.getInstance().reset();
         cacheManager.getCacheNames().forEach(c -> Objects.requireNonNull(cacheManager.getCache(c)).clear());
 
         given(userService.userNameFromLoginCookie(anyString())).willReturn(null);
@@ -99,7 +95,6 @@ class SecurityConfigTest {
                 .header(RequestUtil.HEADER_USER_AGENT, THE_USER_AGENT)
                 .param("login_user", THE_USER_NAME).param("login_pass", THE_PASSWORD).param("cookieok", "true"))
                 .andExpect(MockMvcResultMatchers.status().isOk());
-        assertThat(KeyAccess.getInstance().getKey(), is(THE_EXTERNAL_KEY));
     }
 
     @Test
@@ -149,7 +144,6 @@ class SecurityConfigTest {
                 .param("login_user", THE_USER_NAME).param("login_pass", THE_PASSWORD).param("cookieok", "true"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(cookie().exists(RequestUtil.COOKIE_NAME));
-        assertThat(KeyAccess.getInstance().getKey(), is(THE_EXTERNAL_KEY));
         // Request for photo, provides cookie for auth
         Cookie loginCookie = new Cookie(COOKIE_NAME, THE_TOKEN);
         loginCookie.setMaxAge(60 * 60 * 24 * 92);
@@ -184,7 +178,7 @@ class SecurityConfigTest {
         verify(userService, times(1))
                 .checkToken(anyString(), anyString(), anyString(), any(DeviceType.class), anyBoolean());
         // wait for evicting cached token
-        Thread.sleep(1600L);
+        Thread.sleep(2700L);
         t.run();
         verify(userService, times(2))
                 .checkToken(anyString(), anyString(), anyString(), any(DeviceType.class), anyBoolean());

@@ -1,8 +1,13 @@
 package mfi.photos.server;
 
+import lombok.extern.apachecommons.CommonsLog;
+import mfi.photos.auth.AuthService;
+import mfi.photos.auth.UserPrincipal;
 import mfi.photos.shared.AES;
-import mfi.photos.util.KeyAccess;
+import mfi.photos.util.RequestUtil;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -13,6 +18,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -22,7 +28,15 @@ import java.util.zip.GZIPOutputStream;
  * 
  * @link http://balusc.blogspot.com/2009/02/fileservlet-supporting-resume-and.html
  */
-public class FileDownloadUtil {
+@Component
+@CommonsLog
+public class FileDownload {
+
+	@Autowired
+	private RequestUtil requestUtil;
+
+	@Autowired
+	private AuthService authService;
 
 	private static final int DEFAULT_BUFFER_SIZE = 1024 * 128; // 128k
 	private static final long DEFAULT_EXPIRE_TIME = 604800000L; // ..ms = 1
@@ -31,8 +45,6 @@ public class FileDownloadUtil {
 
 	public void process(HttpServletRequest request, HttpServletResponse response, File file, boolean content)
 			throws IOException {
-
-		// System.out.print("\ndownload:" + file.getName() + " ");
 
 		// Prepare some variables. The ETag is an unique identifier of the file.
 		String fileName = file.getName();
@@ -248,7 +260,7 @@ public class FileDownloadUtil {
 					}
 
 					// Copy full range.
-					copy(file, output, full.start, full.length, isEncrypted);
+					copy(file, output, full.start, full.length, isEncrypted, request);
 				}
 
 			} else if (ranges.size() == 1) {
@@ -262,7 +274,7 @@ public class FileDownloadUtil {
 
 				if (content) {
 					// Copy single part range.
-					copy(file, output, r.start, r.length, isEncrypted);
+					copy(file, output, r.start, r.length, isEncrypted, request);
 				}
 
 			} else {
@@ -286,7 +298,7 @@ public class FileDownloadUtil {
 						sos.println("Content-Range: bytes " + r.start + "-" + r.end + "/" + r.total);
 
 						// Copy single part range of multi part range.
-						copy(file, output, r.start, r.length, isEncrypted);
+						copy(file, output, r.start, r.length, isEncrypted, request);
 					}
 
 					// End with multipart boundary.
@@ -365,37 +377,24 @@ public class FileDownloadUtil {
 	 * @throws IOException
 	 *             If something fails at I/O level.
 	 */
-	private void copy(File file, OutputStream output, long start, long length, boolean isEncrypted)
+	private void copy(File file, OutputStream output, long start, long length, boolean isEncrypted, HttpServletRequest request)
 			throws IOException {
 
-		RandomAccessFile inputFile = null;
-		InputStream inputStream = null;
-		try {
 			if (isEncrypted) {
-				inputStream = new FileInputStream(file);
-				AES.decrypt(KeyAccess.getInstance().getKey().toCharArray(), inputStream, output, start,
-						length);
+				try (InputStream inputStream = new FileInputStream(file)){
+					Optional<UserPrincipal> principal = requestUtil.lookupUserPrincipal();
+					principal.ifPresent( p -> {
+						Optional<String> secureKey = authService.requestSecureKey(
+								p.getToken(), request.getHeader(RequestUtil.HEADER_USER_AGENT));
+						secureKey.ifPresent(s -> AES.decrypt(s.toCharArray(), inputStream, output, start,
+								length));
+					});
+				}
 			} else {
-				inputFile = new RandomAccessFile(file, "r");
-				copyChunk(inputFile, output, start, length);
+				try (RandomAccessFile inputFile =  new RandomAccessFile(file, "r")) {
+					copyChunk(inputFile, output, start, length);
+				}
 			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
-		} finally {
-			close(inputFile);
-			close(inputStream);
-			try {
-				output.flush();
-				close(output);
-			} catch (Exception e) {
-				// noop
-			}
-
-			// System.out.print("w:" + (written / 1024 / 1024) + "M ");
-		}
-
 	}
 
 	private void copyChunk(RandomAccessFile input, OutputStream output, long start, long length)

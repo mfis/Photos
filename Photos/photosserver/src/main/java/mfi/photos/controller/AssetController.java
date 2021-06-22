@@ -1,6 +1,6 @@
 package mfi.photos.controller;
 
-import mfi.photos.server.FileDownloadUtil;
+import mfi.photos.server.FileDownload;
 import mfi.photos.server.Processor;
 import mfi.photos.shared.GalleryView;
 import mfi.photos.util.GalleryViewCache;
@@ -26,7 +26,8 @@ public class AssetController {
     @Autowired
 	private RequestUtil requestUtil;
 
-	private static final FileDownloadUtil fileDownloadUtil = new FileDownloadUtil();
+    @Autowired
+	private FileDownload fileDownload;
 
 	@RequestMapping(value = { RequestUtil.ASSETS_ANT_PATH }, method = { RequestMethod.HEAD })
 	public @ResponseBody void responseHead(HttpServletRequest request, HttpServletResponse response)
@@ -51,7 +52,7 @@ public class AssetController {
 		GalleryView view = GalleryViewCache.getInstance().read(file.getParentFile().getName());
 		if (file.exists() && view != null) {
 			if(view.getUsersAsList().contains(requestUtil.assertUserAndGetName())){
-				fileDownloadUtil.process(request, response, file, content);
+				fileDownload.process(request, response, file, content);
 			}else{
 				response.setStatus(401);
 			}

@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.apachecommons.CommonsLog;
-import mfi.photos.util.KeyAccess;
 import mfi.photos.util.RequestUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,17 +55,7 @@ public class UserAuthenticationFilter extends GenericFilterBean {
 			return;
 		}
 
-		doReadKey(req);
-
 		chain.doFilter(req, resp);
-	}
-
-	private void doReadKey(ServletRequest req) {
-
-		if (!KeyAccess.getInstance().isKeySet() && requestUtil.lookupUserPrincipal().isPresent()) {
-			Optional<String> secureKey = authService.requestSecureKey(requestUtil.lookupUserPrincipal().get().getToken(), lookupUserAgent(req));
-			secureKey.ifPresent(s -> KeyAccess.getInstance().setKey(s));
-		}
 	}
 
 	private LoginReturn doLogin(ServletRequest req, ServletResponse resp) throws IOException {
