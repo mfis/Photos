@@ -255,7 +255,11 @@ public class Processor {
 			gui.viewMessage("");
 		}
 		checkSyncStatus();
-		photoServerConnection.cleanUp(syncModel);
+		try {
+			photoServerConnection.cleanUp(syncModel);
+		}catch (Exception e){
+			gui.appendMessage("Bereinigung fehlerhaft: " + e.getMessage());
+		}
 	}
 
 	private int processAlbum(Album album, String localBasePath, String albumStatus, int totalPhotosToProcess,

@@ -11,9 +11,9 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
@@ -21,8 +21,6 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.util.*;
@@ -61,7 +59,7 @@ public class PhotosServerConnection {
 			try {
 				sendPost(parameters);
 			} catch (IOException | GeneralSecurityException e) {
-				throw new RuntimeException("upload failed", e);
+				throw new RuntimeException("upload of " + asB64.length() + " bytes failed", e);
 			}
 		};
 
@@ -184,6 +182,7 @@ public class PhotosServerConnection {
 		Map<String, String> parameters = initParametersWithLoginData();
 		parameters.put("cleanup", json);
 		parameters.put("cleanupListHash", DigestUtils.md5Hex(json));
+		System.out.println("client cleanup json: (" + DigestUtils.md5Hex(json) + ")" + json);
 		sendPost(parameters);
 	}
 
@@ -220,9 +219,7 @@ public class PhotosServerConnection {
 			for (String key : parameters.keySet()) {
 				params.add(new BasicNameValuePair(key, parameters.get(key)));
 			}
-
-			URI uri = new URIBuilder(request.getURI()).addParameters(params).build();
-			request.setURI(uri);
+			request.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.US_ASCII));
 
 			try (CloseableHttpResponse response = httpClient.execute(request)) {
 
@@ -236,10 +233,7 @@ public class PhotosServerConnection {
 				} else {
 					return null;
 				}
-
 			}
-		} catch (URISyntaxException e) {
-			throw new IllegalStateException("uri syntax error:", e);
 		}
 	}
 }
