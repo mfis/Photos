@@ -12,12 +12,12 @@ logging:
     mfi:
       photos:           INFO
 server:
-  max-http-header-size: 20000
+  max-http-header-size: 32800
   port:                 8082
   tomcat:
     threads:
-      min-spare:        2
-      max:              4
+      min-spare:        5
+      max:              50
   error:
     whitelabel:
       enabled:          false

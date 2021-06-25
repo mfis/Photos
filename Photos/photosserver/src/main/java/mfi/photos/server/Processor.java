@@ -2,6 +2,7 @@ package mfi.photos.server;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import lombok.extern.apachecommons.CommonsLog;
 import mfi.photos.shared.AES;
 import mfi.photos.shared.GalleryList;
 import mfi.photos.shared.Item;
@@ -25,6 +26,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @Component
+@CommonsLog
 public class Processor {
 
 	public static final String JSON_FILE_SUFFIX = ".json";
@@ -198,6 +200,8 @@ public class Processor {
 				FileUtils.deleteQuietly(dir);
 			}
 		}
+
+		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 	}
 
 	public void loginscreenHTML(String message, Model model) {
@@ -215,8 +219,6 @@ public class Processor {
 	public String listJson(String s, Long yPos, boolean withHashesAndUsers) {
 
 		String user = requestUtil.assertUserAndGetName();
-		String jsonDir = lookupListDir();
-		GalleryViewCache.getInstance().refresh(jsonDir, gson);
 
 		List<GalleryView> galleryViews = new LinkedList<>();
 		Set<String> keySet = GalleryViewCache.getInstance().keySet();

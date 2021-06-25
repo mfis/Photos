@@ -42,12 +42,5 @@ public class SecurityConfig {
 			web.ignoring().mvcMatchers(RequestUtil.loginRequestPath());
 			web.ignoring().mvcMatchers(RequestUtil.logoutRequestPath());
 		}
-
-		@Bean
-		public AuthenticationManager authenticationManagerBean() throws Exception {
-			return super.authenticationManagerBean();
-		}
 	}
-
-
 }

@@ -1,5 +1,6 @@
 package mfi.photos.util;
 
+import lombok.extern.apachecommons.CommonsLog;
 import mfi.photos.auth.UserAuthentication;
 import mfi.photos.auth.UserPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
+@CommonsLog
 public class RequestUtil {
 
     public static final String PATH_LOGIN = "/login";
@@ -26,6 +28,7 @@ public class RequestUtil {
 
     public void assertLoggedInUser(){
         if(lookupUserPrincipal().isEmpty()){
+            log.warn("assertLoggedInUser - no user!");
             throw new IllegalCallerException("No known user logged in");
         }
     }
