@@ -219,7 +219,7 @@ public class PhotosServerConnection {
 			for (String key : parameters.keySet()) {
 				params.add(new BasicNameValuePair(key, parameters.get(key)));
 			}
-			request.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.US_ASCII));
+			request.setEntity(new UrlEncodedFormEntity(params, StandardCharsets.UTF_8));
 
 			try (CloseableHttpResponse response = httpClient.execute(request)) {
 
